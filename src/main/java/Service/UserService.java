@@ -13,4 +13,7 @@ public interface UserService
     void login(String email,String password);
     void UpdateProfile(long UID,User newUser);
     List<User> GetAllUsers();
+    void SendFriendRequest(String FriendName);
+    void removeFriend(String FriendName);
+    void RecieveFriendRequest(String FriendName);
 }

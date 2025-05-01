@@ -3,6 +3,7 @@ package EJBs;
 import java.util.ArrayList;
 import java.util.List;
 
+import Model.Friend;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.inject.Inject;
@@ -20,6 +21,10 @@ public class UserServiceBean implements UserService
     @PersistenceContext
     private EntityManager em;
     User user = new User();
+    Friend friend = new Friend();
+
+    @EJB
+    private FriendSeviceBean fservice ;
 
     @Override
     public void registerUser(String email, String password) {
@@ -100,4 +105,23 @@ public User findUserByEmail(String email) {
             return new ArrayList<>();
         }
     }
+ /*****************************************************************************/
+@Override
+public void SendFriendRequest(String FriendName)
+{
+}
+/*****************************************************************************/
+@Override
+public void RecieveFriendRequest(String FriendName)
+{
+
+}
+/*****************************************************************************/
+@Override
+public void removeFriend(String FriendName)
+{
+
+}
+
+
 }
