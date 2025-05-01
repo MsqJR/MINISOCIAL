@@ -95,4 +95,13 @@ public String hello()
     return "Hello World";
 }
 
+    @GET
+    @Path("/hi")
+    public String hi()
+    {
+        return "hi mark";
+    }
+
+
+
 }
