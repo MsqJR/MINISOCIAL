@@ -1,0 +1,16 @@
+package Service;
+import java.util.List;
+
+
+import Model.User;
+
+@jakarta.ejb.Local
+public interface UserService
+{
+    void registerUser(String email,String password);
+    User findUserByEmail(String email);
+    User findUserById(long ID);
+    void login(String email,String password);
+    void UpdateProfile(long UID,User newUser);
+    List<User> GetAllUsers();
+}
