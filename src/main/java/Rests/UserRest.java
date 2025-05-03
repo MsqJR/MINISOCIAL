@@ -11,6 +11,9 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.SecurityContext;
+import jakarta.ws.rs.core.Context;
+import java.util.List;
 
 import EJBs.UserServiceBean;
 import Model.User;
@@ -87,6 +90,40 @@ public class UserRest
                     .build();
         }
     }
+    /************************************************************************************/
+    @GET
+    @Path("/{username}/friends")
+    public Response getFriends(@PathParam("username") String username, @Context SecurityContext securityContext)
+    {
+        try {
+            if (securityContext.getUserPrincipal() == null) {
+                return Response.status(Response.Status.UNAUTHORIZED)
+                        .entity("{\"error\": \"User not authenticated.\"}")
+                        .build();
+            }
+
+            String loggedInUser = securityContext.getUserPrincipal().getName();
+            if (!loggedInUser.equals(username) && !securityContext.isUserInRole("admin")) {
+                return Response.status(Response.Status.FORBIDDEN)
+                        .entity("{\"error\": \"Access denied. Only the user or admin can view friends.\"}")
+                        .build();
+            }
+
+            List<User> friends = usb.viewConnections(username);
+            if (friends.isEmpty()) {
+                return Response.status(Response.Status.OK)
+                        .entity("{\"message\": \"No friends found.\"}")
+                        .build();
+            }
+            return Response.ok(friends).build();
+        } catch (RuntimeException e) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity("{\"error\": \"" + e.getMessage() + "\"}")
+                    .build();
+        }
+    }
+
+
     /***********************************************************************************************************/
 @GET
 @Path("/hello")

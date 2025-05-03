@@ -19,5 +19,7 @@ public interface UserService
     void RecieveFriendRequest(User user);
      User findUserByName(String Name);
     public void RejectFriend(String FriendName);
-    public void ViewConnctions(String UserName);
+    //public void ViewConnctions(String UserName);
+    List<User> viewConnections(String userName);
+
 }

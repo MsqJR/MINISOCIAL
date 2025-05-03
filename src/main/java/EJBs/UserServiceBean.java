@@ -3,6 +3,7 @@ package EJBs;
 import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
@@ -188,8 +189,20 @@ public void removeFriend(String FriendName)
  /************************************************************************************/
 //need to implement (Users can view all their friends and their profiles.)
  @Override
- public void ViewConnctions(String UserName)
+ public List<User> viewConnections(String userName)
  {
+     User currentUser = findUserByName(userName);
+     if (currentUser == null) {
+         throw new RuntimeException("User not found");
+     }
+     Set<User> friends = currentUser.getFriends();
+     if (friends == null || friends.isEmpty()) {
+         System.out.println("No friends found for user: " + userName);
+         return new ArrayList<>();
+     }
+     System.out.println("Successfully retrieved " + friends.size() + " friends for user: " + userName);
+     return new ArrayList<>(friends);
 
  }
+
 }
