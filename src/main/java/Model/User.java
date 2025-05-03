@@ -27,26 +27,8 @@ public class User
     @NotNull
     private String Password;
     private String Role;
-    private String bio;
     private int num_friends=0;
 
-    @ManyToMany
-    @JoinTable(
-            name = "user_friend",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "friend_id")
-    )
-    private Set<Friend> friends = new HashSet<>();
-
-    @ManyToMany
-    @JoinTable(name = "user_pending_requests",
-            joinColumns = @JoinColumn(name = "receiver_id"),
-            inverseJoinColumns = @JoinColumn(name = "sender_id"))
-    private Set<User> pendingRequests = new HashSet<>();
-
-
-    @OneToOne
-    private Profile profile;
 
     public User() {
     }
@@ -56,6 +38,36 @@ public class User
         this.email = email;
         this.Password = Password;
         this.Role = role;
+    }
+
+    @ManyToMany
+    @JoinTable(name = "pending_requests",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "requester_id"))
+    private Set<User> friendRequests = new HashSet<>();
+/*****************************************************************************************/
+    @ManyToMany
+    @JoinTable(name = "user_friends",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "friend_id"))
+    private Set<User> Friends = new HashSet<>();
+/*****************************************************************************************/
+@ManyToMany
+@JoinTable(name = "Send_requests",
+        joinColumns = @JoinColumn(name = "user_id"),
+        inverseJoinColumns = @JoinColumn(name = "receiver_id"))
+private Set<User> Sender = new HashSet<>();
+/*****************************************************************************************/
+@OneToOne
+private Profile user_profile;
+/********************************************************************************/
+    public Set<User> getFreinds()
+    {
+        return Friends;
+    }
+
+    public void setFreinds(Set<User> freinds) {
+        this.Friends = freinds;
     }
 
     public long getId() {
@@ -98,31 +110,38 @@ public class User
         Role = role;
     }
 
-    public String getBio() {
-        return bio;
-    }
-
-    public void setBio(String bio) {
-        this.bio = bio;
-    }
-    public Set<Friend> getFriends() {
-        return friends;
-    }
-
-    public void setFriends(Set<Friend> friends) {
-        this.friends = friends;
-    }
     public int getNum_friends() {
         return num_friends;
     }
     public void setNum_friends(int num_friends) {
         this.num_friends = num_friends;
     }
-    public Set<User> getPendingRequests() {
-        return pendingRequests;
+
+    public Set<User> getFriends() {
+        return Friends;
     }
 
-    public void setPendingRequests(Set<User> pendingRequests) {
-        this.pendingRequests = pendingRequests;
+    public void setFriends(Set<User> friends) {
+        Friends = friends;
+    }
+
+    public Set<User> getFriendRequests() {
+        return friendRequests;
+    }
+
+    public void setFriendRequests(Set<User> friendRequests) {
+        this.friendRequests = friendRequests;
+    }
+    public void setFriendRequests(User friendRequester)
+    {
+        friendRequests.add(friendRequester);
+
+    }
+    public Set<User> getSender() {
+        return Sender;
+    }
+    public void setSender(User sender)
+    {
+        Sender.add(sender);
     }
 }

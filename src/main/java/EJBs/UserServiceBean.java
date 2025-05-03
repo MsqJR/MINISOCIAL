@@ -1,12 +1,11 @@
 package EJBs;
 
+import java.sql.SQLOutput;
 import java.util.ArrayList;
 import java.util.List;
 
-import Model.Friend;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
-import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
@@ -14,6 +13,7 @@ import jakarta.persistence.TypedQuery;
 
 import Model.User;
 import Service.UserService;
+import jdk.jfr.Frequency;
 
 @Stateless
 public class UserServiceBean implements UserService
@@ -21,10 +21,7 @@ public class UserServiceBean implements UserService
     @PersistenceContext
     private EntityManager em;
     User user = new User();
-    Friend friend = new Friend();
 
-    @EJB
-    private FriendSeviceBean fservice ;
 
     @Override
     public void registerUser(String email, String password) {
@@ -72,6 +69,18 @@ public User findUserByEmail(String email) {
             return null;
         }
     }
+ /*********************************************************************************************/
+ @Override
+ public User findUserByName(String Name) {
+     try {
+         TypedQuery<User> query = em.createQuery(
+                 "SELECT u FROM User u WHERE u.Name = :Name", User.class);
+         query.setParameter("Name", Name);
+         return query.getSingleResult();
+     } catch (NoResultException e) {
+         return null;
+     }
+ }
 /***********************************************************************************************/
     @Override
     public void UpdateProfile(long UID, User newUser) {
@@ -89,9 +98,8 @@ public User findUserByEmail(String email) {
         if (newUser.getEmail() != null) {
             existingUser.setEmail(newUser.getEmail());
         }
-        if (newUser.getBio() != null) {
-            existingUser.setBio(newUser.getBio());
-        }
+        /*NeedTOUpdateBio*/
+        //upadate bio
 
         em.merge(existingUser);
     }
@@ -109,19 +117,79 @@ public User findUserByEmail(String email) {
 @Override
 public void SendFriendRequest(String FriendName)
 {
+    User Friend = findUserByName(FriendName);
+    if(Friend==null)
+        throw new RuntimeException("User not found");
+
+    if (Friend.getFriendRequests().contains(user)) {
+        System.out.println("Friend request already sent");
+        return;
+    }
+        System.out.println("successfully sent request");
+        Friend.getFriendRequests().add(user);
+        em.merge(Friend);
+        // RecieveFriendRequest(user);
+}
+/*********************************************************************************/
+@Override
+public void RecieveFriendRequest(User Sender)
+{
+   user.setFriendRequests(Sender);
+   em.merge(Sender);
 }
 /*****************************************************************************/
 @Override
-public void RecieveFriendRequest(String FriendName)
+public void AcceptFriendRequest(String FriendName)
 {
+    User Friend = findUserByName(FriendName);
+    if (Friend == null) {
+        throw new RuntimeException("User not found");
+    }
+    if (user.getFriendRequests().contains(Friend)) {
+        Friend.getFriends().add(user);
+        user.getFriends().add(Friend);
 
+        user.getFriendRequests().remove(Friend);
+
+        em.merge(Friend);
+        em.merge(user);
+    } else {
+        System.out.println("No request found");
+    }
 }
 /*****************************************************************************/
 @Override
 public void removeFriend(String FriendName)
 {
-
+    User Friend = findUserByName(FriendName);
+    if (Friend == null) {
+        throw new RuntimeException("User not found");
+    }
+    if (user.getFriends().contains(Friend)) {
+        user.getFriends().remove(Friend);
+        Friend.getFriends().remove(user);
+        em.merge(Friend);
+        em.merge(user);
+    }
 }
+/*****************************************************************************************/
+@Override
+ public void RejectFriend(String FriendName)
+ {
+     User Friend = findUserByName(FriendName);
+     if (Friend == null) {
+         throw new RuntimeException("User not found");
+     }
+     if (user.getFriendRequests().contains(Friend)) {
+         user.getFriendRequests().remove(Friend);
+         em.merge(user);
+     }
+    }
+ /************************************************************************************/
+//need to implement (Users can view all their friends and their profiles.)
+ @Override
+ public void ViewConnctions(String UserName)
+ {
 
-
+ }
 }
