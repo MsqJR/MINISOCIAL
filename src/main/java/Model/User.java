@@ -1,14 +1,14 @@
 package Model;
 
+import jakarta.json.bind.annotation.JsonbTransient;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
-
 import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Table(name = "user")
+@Table(name = "users")
 public class User {
 
     @NotNull
@@ -35,13 +35,14 @@ public class User {
         this.Password = Password;
         this.Role = role;
     }
-
+    @JsonbTransient
     @ManyToMany
     @JoinTable(name = "pending_requests",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "requester_id"))
     private Set<User> friendRequests = new HashSet<>();
 /*************************************************************************/
+    @JsonbTransient
     @ManyToMany
     @JoinTable(name = "user_friends",
             joinColumns = @JoinColumn(name = "user_id"),

@@ -1,32 +1,28 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <persistence xmlns="https://jakarta.ee/xml/ns/persistence"
              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-             xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_2.xsd"
-             version="3.2">
-  <persistence-unit name="default">
-    <!-- JDBC Connection Configuration -->
+             xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd"
+             version="3.0">
+
+  <persistence-unit name="default" transaction-type="JTA">
+    <description>MiniSocial Persistence Unit</description>
+
+    <!-- Scan for entity classes -->
+    <exclude-unlisted-classes>false</exclude-unlisted-classes>
+
     <properties>
-      <!-- JDBC Driver -->
-      <property name="javax.persistence.jdbc.driver" value="com.mysql.cj.jdbc.Driver"/>
-      <!-- JDBC URL (Replace with your actual database URL) -->
-      <property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/your_database_name"/>
-      <!-- Database Username -->
-      <property name="javax.persistence.jdbc.user" value="your_database_username"/>
-      <!-- Database Password -->
-      <property name="javax.persistence.jdbc.password" value="your_database_password"/>
+      <!-- Schema generation -->
+      <property name="jakarta.persistence.schema-generation.database.action" value="create"/>
 
-      <!-- Dialect for the database (optional, but helpful for Hibernate) -->
-      <property name="hibernate.dialect" value="org.hibernate.dialect.MySQL8Dialect"/>
+      <!-- Logging properties -->
+      <property name="jakarta.persistence.logging.level" value="FINE"/>
 
-      <!-- Hibernate Specific Settings -->
-      <property name="hibernate.show_sql" value="true"/>
-      <property name="hibernate.format_sql" value="true"/>
-      <property name="hibernate.hbm2ddl.auto" value="update"/> <!-- Can be set to 'validate', 'update', 'create', 'create-drop' -->
-      <property name="hibernate.id.new_generator_mappings" value="true"/>
+      <!-- Cache configuration -->
+      <property name="jakarta.persistence.sharedCache.mode" value="ENABLE_SELECTIVE"/>
 
-      <!-- Enable second-level cache (optional, depending on your needs) -->
-      <property name="hibernate.cache.use_second_level_cache" value="true"/>
+      <!-- Transaction properties -->
+      <property name="jakarta.persistence.lock.timeout" value="1000"/>
+      <property name="jakarta.persistence.query.timeout" value="1000"/>
     </properties>
   </persistence-unit>
-
 </persistence>
