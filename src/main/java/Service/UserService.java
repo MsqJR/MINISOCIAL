@@ -10,16 +10,15 @@ public interface UserService
     void registerUser(String email,String password);
     User findUserByEmail(String email);
     User findUserById(long ID);
-    void login(String email,String password);
+    public User login(String email, String password);
     void UpdateProfile(long UID,User newUser);
     List<User> GetAllUsers();
-    void SendFriendRequest(String FriendName);
-    void removeFriend(String FriendName);
-    void AcceptFriendRequest(String FriendName);
+    void SendFriendRequest(String currentUserEmail, String friendName);
+    public void removeFriend(String currentUserEmail, String friendName);
+    void acceptFriendRequest(String userEmail,String friendName);
     void RecieveFriendRequest(User user);
      User findUserByName(String Name);
-    public void RejectFriend(String FriendName);
-    //public void ViewConnctions(String UserName);
+    void RejectFriend(String currentUserEmail, String friendName);
     List<User> viewConnections(String userName);
 
 }
