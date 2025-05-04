@@ -42,16 +42,20 @@ public class User {
             inverseJoinColumns = @JoinColumn(name = "requester_id"))
     private Set<User> friendRequests = new HashSet<>();
 /*************************************************************************/
-    @ManyToMany
-    @JoinTable(name = "user_friends",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "friend_id"))
-    private Set<User> friends = new HashSet<>();
+@ManyToMany
+@JoinTable(
+        name = "user_friends",
+        joinColumns = @JoinColumn(name = "user_id"),
+        inverseJoinColumns = @JoinColumn(name = "friend_id")
+        )
+private Set<User> friends = new HashSet<>();
     /*************************************************************************/
     @OneToOne
     private Profile user_profile;
-    /*************************************************************************/
-
+    /************************************************************************/
+  @OneToMany
+    private Post posts;
+/*********************************************************************/
     public long getId() {
         return ID;
     }
