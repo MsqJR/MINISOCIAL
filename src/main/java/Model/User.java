@@ -16,6 +16,7 @@ public class User {
     @Id
     private long ID;
 
+
     private String Name;
 
     @Email
@@ -24,6 +25,7 @@ public class User {
 
     @NotNull
     private String Password;
+
 
     private String Role;
 

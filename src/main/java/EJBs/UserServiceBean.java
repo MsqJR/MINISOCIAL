@@ -20,14 +20,18 @@ public class UserServiceBean implements UserService {
     private EntityManager em;
 
     @Override
-    public void registerUser(String email, String password) {
+    public void registerUser(String email, String password,String UserName) {
         if (findUserByEmail(email) != null) {
             System.out.println("This email already exists");
         } else {
             User newUser = new User();
             newUser.setEmail(email);
             newUser.setPassword(password);
-            newUser.setRole("User"); // Default role
+            newUser.setRole("User");// Default role
+
+
+            newUser.setName(UserName);
+
             em.persist(newUser);
         }
     }
@@ -109,8 +113,8 @@ public class UserServiceBean implements UserService {
     }
 
     @Override
-    public void SendFriendRequest(String currentUserEmail, String friendName) {
-        User sender = findUserByEmail(currentUserEmail);
+    public void SendFriendRequest(String UserName, String friendName) {
+        User sender = findUserByName(UserName);
         User recipient = findUserByName(friendName);
 
         if (sender == null || recipient == null) {
@@ -128,12 +132,21 @@ public class UserServiceBean implements UserService {
     }
 
     @Override
-    public void acceptFriendRequest(String userEmail, String friendName) {
-        User user = findUserByEmail(userEmail);
+    public void acceptFriendRequest(String username, String friendName) {
+
+        User user = findUserByName(username);
+        if (user == null) {
+            user = findUserByEmail(username);
+        }
+
         User friend = findUserByName(friendName);
 
-        if (user == null || friend == null) {
-            throw new RuntimeException("User not found");
+        if (user == null) {
+            throw new RuntimeException("User not found: " + username);
+        }
+
+        if (friend == null) {
+            throw new RuntimeException("Friend not found: " + friendName);
         }
 
         if (user.getFriendRequests().contains(friend)) {
@@ -143,8 +156,9 @@ public class UserServiceBean implements UserService {
 
             em.merge(user);
             em.merge(friend);
+            System.out.println("Friend request accepted from " + friend.getName() + " by " + user.getName());
         } else {
-            System.out.println("No friend request found from " + friendName);
+            throw new RuntimeException("No friend request found from " + friendName);
         }
     }
 
@@ -153,20 +167,27 @@ public class UserServiceBean implements UserService {
     {
         User friend = findUserByName(user.getName());
         if (friend == null) {
-            System.out.println("No user found with name: " + user.getName());
-            return;
+            throw new RuntimeException("No user found with name: " + user.getName());
         }
         friend.getFriendRequests().add(user);
         em.merge(friend);
     }
 
     @Override
-    public void removeFriend(String currentUserEmail, String friendName) {
-        User user = findUserByEmail(currentUserEmail);
+    public void removeFriend(String username, String friendName) {
+        User user = findUserByName(username);
+        if (user == null) {
+            user = findUserByEmail(username);
+        }
+
         User friend = findUserByName(friendName);
 
-        if (user == null || friend == null) {
-            throw new RuntimeException("User not found");
+        if (user == null) {
+            throw new RuntimeException("User not found: " + username);
+        }
+
+        if (friend == null) {
+            throw new RuntimeException("Friend not found: " + friendName);
         }
 
         if (user.getFriends().contains(friend)) {
@@ -174,6 +195,9 @@ public class UserServiceBean implements UserService {
             friend.getFriends().remove(user);
             em.merge(user);
             em.merge(friend);
+            System.out.println("Friend removed: " + friend.getName() + " from " + user.getName());
+        } else {
+            throw new RuntimeException("Users are not friends: " + user.getName() + " and " + friendName);
         }
     }
 

@@ -7,7 +7,7 @@ import Model.User;
 @jakarta.ejb.Local
 public interface UserService
 {
-    void registerUser(String email,String password);
+    void registerUser(String email,String password,String UserName);
     User findUserByEmail(String email);
     User findUserById(long ID);
     public User login(String email, String password);

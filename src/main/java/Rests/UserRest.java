@@ -9,6 +9,8 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
 import jakarta.ws.rs.core.Context;
+
+import java.util.ArrayList;
 import java.util.List;
 
 import EJBs.UserServiceBean;
@@ -50,13 +52,19 @@ public class UserRest
     @Path("/register")
     public Response Register(User us) {
         try {
-            usb.registerUser(us.getEmail(), us.getPassword());
+            if (us.getEmail() == null || us.getPassword() == null) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("{\"error\": \"Email and password must not be empty.\"}")
+                        .build();
+            }
+
+            usb.registerUser(us.getEmail(), us.getPassword(),us.getName());
             return Response.status(Response.Status.CREATED)
                     .entity("{\"message\":\"User registered successfully.\"}")
                     .build();
         } catch (Exception e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity("{\"message\":\"Registration failed.\"}"+e.getMessage())
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("{\"error\":\"" + e.getMessage() + "\"}")
                     .build();
         }
     }
@@ -69,13 +77,13 @@ public class UserRest
             return Response.ok(usb.GetAllUsers()).build();
         } catch (Exception e) {
             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity("{\"message\":\"Failed to fetch users\"}")
+                    .entity("{\"error\":\"Failed to fetch users: " + e.getMessage() + "\"}")
                     .build();
         }
     }
-/***********************************************************************************************************/
+    /***********************************************************************************************************/
     @POST
-    @Path("/{id}")
+    @Path("/update/{id}")
     public Response updateUser(@PathParam("id") long id, User updatedUser)
     {
         try {
@@ -91,22 +99,10 @@ public class UserRest
     /************************************************************************************/
     @GET
     @Path("/{username}/friends")
-    public Response getFriends(@PathParam("username") String username, @Context SecurityContext securityContext)
+    public Response getFriends(@PathParam("username") String username)
     {
+        System.out.println("Fetching friends for user: " + username + " ... ");
         try {
-            if (securityContext.getUserPrincipal() == null) {
-                return Response.status(Response.Status.UNAUTHORIZED)
-                        .entity("{\"error\": \"User not authenticated.\"}")
-                        .build();
-            }
-
-            String loggedInUser = securityContext.getUserPrincipal().getName();
-            if (!loggedInUser.equals(username) && !securityContext.isUserInRole("admin")) {
-                return Response.status(Response.Status.FORBIDDEN)
-                        .entity("{\"error\": \"Access denied. Only the user or admin can view friends.\"}")
-                        .build();
-            }
-
             List<User> friends = usb.viewConnections(username);
             if (friends.isEmpty()) {
                 return Response.status(Response.Status.OK)
@@ -115,80 +111,101 @@ public class UserRest
             }
             return Response.ok(friends).build();
         } catch (RuntimeException e) {
-            return Response.status(Response.Status.NOT_FOUND)
+            return Response.status(Response.Status.BAD_REQUEST)
                     .entity("{\"error\": \"" + e.getMessage() + "\"}")
                     .build();
         }
     }
-/**********************************************************************************/
-@POST
-@Path("/send/{username}/friends")
-public Response SendFriendRequest(@PathParam("username") String username, User friend)
-{
-    if (friend == null || friend.getName() == null) {
-        return Response.status(Response.Status.BAD_REQUEST)
-                .entity("{\"error\": \"Friend name must be provided.\"}")
-                .build();
+    /**********************************************************************************/
+    @POST
+    @Path("/send/{username}/friends")
+    public Response SendFriendRequest(@PathParam("username") String username, User friend)
+    {
+        if (friend == null || friend.getName() == null) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("{\"error\": \"Friend name must be provided.\"}")
+                    .build();
+        }
+
+        try {
+            usb.SendFriendRequest(username, friend.getName());
+            return Response.ok("{\"message\":\"Friend request sent.\"}").build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("{\"error\":\"" + e.getMessage() + "\"}")
+                    .build();
+        }
+    }
+    /***********************************************************************************************************/
+    @POST
+    @Path("/accept/{username}/friends")
+    public Response acceptSendRequest(@PathParam("username") String username, User friend)
+    {
+        if (friend == null || friend.getName() == null) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("{\"error\": \"Friend name must be provided.\"}")
+                    .build();
+        }
+
+        try {
+            usb.acceptFriendRequest(username, friend.getName());
+            return Response.ok("{\"message\":\"Friend request accepted.\"}").build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("{\"error\":\"" + e.getMessage() + "\"}")
+                    .build();
+        }
     }
 
-    try {
-        usb.SendFriendRequest(username, friend.getName());
-        return Response.ok("{\"message\":\"Friend request sent.\"}").build();
-    } catch (Exception e) {
-        return Response.status(Response.Status.BAD_REQUEST)
-                .entity("{\"error\":\"" + e.getMessage() + "\"}")
-                .build();
-    }
-}
-/***********************************************************************************************************/
-@POST
-@Path("/accept/{username}/friends")
-public Response acceptSendRequest(@PathParam("username") String username,User friend)
-{
-    if (friend == null || friend.getName() == null) {
-        return Response.status(Response.Status.BAD_REQUEST)
-                .entity("{\"error\": \"Friend name must be provided.\"}")
-                .build();
+    /***********************************************************************************************************/
+    @DELETE
+    @Path("/{username}/friends/{friendName}")
+    public Response DeleteFriendByPathParam(@PathParam("username") String username, @PathParam("friendName") String friendName)
+    {
+        if (friendName == null || friendName.isEmpty()) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("{\"error\": \"Friend name must be provided.\"}")
+                    .build();
+        }
+
+        try {
+            usb.removeFriend(username, friendName);
+            return Response.ok("{\"message\":\"Friend removed successfully.\"}").build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("{\"error\":\"" + e.getMessage() + "\"}")
+                    .build();
+        }
     }
 
-    try {
-        usb.acceptFriendRequest(username,friend.getName());
-        return Response.ok("{\"message\":\"Friend request accepted.\"}").build();
-    } catch (Exception e) {
-        return Response.status(Response.Status.BAD_REQUEST)
-                .entity("{\"error\":\"" + e.getMessage() + "\"}")
-                .build();
-    }
-}
-/***********************************************************************************************************/
-@DELETE
-@Path("/delete/{username}/friends")
-public Response DeleteFriend(@PathParam("username") String username,User friend)
-{
-    if (friend == null || friend.getName() == null) {
-        return Response.status(Response.Status.BAD_REQUEST)
-                .entity("{\"error\": \"Friend name must be provided.\"}")
-                .build();
-    }
+    /// /test
+    /***********************************************************************************************************/
+    @POST
+    @Path("/reject/{username}/friends")
+    public Response rejectFriendRequest(@PathParam("username") String username, User friend)
+    {
+        if (friend == null || friend.getName() == null) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("{\"error\": \"Friend name must be provided.\"}")
+                    .build();
+        }
 
-    try {
-        usb.removeFriend(username,friend.getName());
-        return Response.ok("{\"message\":\"Friend request accepted.\"}").build();
-    } catch (Exception e) {
-        return Response.status(Response.Status.BAD_REQUEST)
-                .entity("{\"error\":\"" + e.getMessage() + "\"}")
-                .build();
+        try {
+            usb.RejectFriend(username, friend.getName());
+            return Response.ok("{\"message\":\"Friend request rejected.\"}").build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("{\"error\":\"" + e.getMessage() + "\"}")
+                    .build();
+        }
     }
-}
-/***********************************************************************************************************/
-//need to complete recicve and reject
-/***********************************************************************************************************/
-@GET
-@Path("/hello")
-public String hello()
-{
-    return "Hello World";
-}
+    /***********************************************************************************************************/
+    @GET
+    @Path("/hello")
+    public String hello()
+    {
+        return "Hello World";
+    }
 
     @GET
     @Path("/hi")
