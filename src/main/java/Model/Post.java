@@ -1,40 +1,57 @@
 package Model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
+import jakarta.json.bind.annotation.JsonbTypeAdapter;
+import java.time.LocalDateTime;
 
 @Entity
-public class Post
-{
+@Table(name = "posts")
+public class Post {
     @Id
     @NotNull
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long PID;
+    private long postId;
 
     @NotNull
     private String content;
 
+    private LocalDateTime createdAt;
+
     @ManyToOne
+    @JoinColumn(name = "user_id")
     private User user;
 
     @OneToOne
-    private MediaAttachement medattachement;
+    @JoinColumn(name = "media_id")
+    @JsonbTypeAdapter(MediaAttachementAdapter.class)
+    private MediaAttachement media;
 
-    public Post()
-    {
+    public Post() {
+        this.createdAt = LocalDateTime.now();
     }
-    public long getPID() {
-        return PID;
-    }
-    public void setPID(long PID) {
-        this.PID = PID;
-    }
+
     public String getContent() {
         return content;
     }
+
     public void setContent(String content) {
         this.content = content;
     }
 
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public MediaAttachement getMedia() {
+        return media;
+    }
+
+    public void setMedia(MediaAttachement media) {
+        this.media = media;
+    }
 }

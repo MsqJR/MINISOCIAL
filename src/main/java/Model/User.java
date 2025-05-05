@@ -4,12 +4,17 @@ import jakarta.json.bind.annotation.JsonbTransient;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
+
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import Model.Post;
 
 @Entity
 @Table(name = "users")
 public class User {
+
 
     @NotNull
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -110,5 +115,12 @@ public class User {
     public void setFriends(Set<User> friends) {
         this.friends = friends;
     }
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    private List<Post> posts = new ArrayList<>();
+    public List<Post> getPosts() {
+        return posts;
+    }
+
+
 
 }

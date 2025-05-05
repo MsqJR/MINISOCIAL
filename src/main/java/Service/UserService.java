@@ -21,4 +21,5 @@ public interface UserService
     void RejectFriend(String currentUserEmail, String friendName);
     List<User> viewConnections(String userName);
 
+
 }

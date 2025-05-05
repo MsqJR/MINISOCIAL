@@ -1,20 +1,22 @@
 package Model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 
 @Entity
-public class MediaAttachement
-{
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "media_type", discriminatorType = DiscriminatorType.STRING)
+public abstract class MediaAttachement {
     @Id
     @NotNull
-     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long mediaID;
-    private String link;
-    private String image_url;
 
+    public long getMediaID() {
+        return mediaID;
+    }
 
+    public void setMediaID(long mediaID) {
+        this.mediaID = mediaID;
+    }
 }

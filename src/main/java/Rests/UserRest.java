@@ -1,5 +1,6 @@
 package Rests;
 
+import Model.*;
 import Service.UserService;
 import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
@@ -7,14 +8,29 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.SecurityContext;
-import jakarta.ws.rs.core.Context;
+
+
+import Service.PostService;
+import Model.Post;
+
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.PathParam;
+import jakarta.ws.rs.POST;
 
 import java.util.ArrayList;
 import java.util.List;
 
+
+import Model.ImageAttachement;
+import Model.LinkAttachement;
+
+
+
+
+
+
+
 import EJBs.UserServiceBean;
-import Model.User;
 
 @Path("/Users")
 @Produces(MediaType.APPLICATION_JSON)
@@ -194,6 +210,40 @@ public class UserRest
             usb.RejectFriend(username, friend.getName());
             return Response.ok("{\"message\":\"Friend request rejected.\"}").build();
         } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("{\"error\":\"" + e.getMessage() + "\"}")
+                    .build();
+        }
+    }
+    /*********************************************************************************************************************/
+    @EJB(beanName = "PostServiceBean")
+    private PostService psb;
+
+    @POST
+    @Path("/{username}/posts")
+    public Response createPost(@PathParam("username") String username, Post post) {
+        try {
+            if (post == null || post.getContent() == null || post.getContent().trim().isEmpty()) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("{\"error\": \"Post content must not be empty.\"}")
+                        .build();
+            }
+
+            String imageUrl = null;
+            String link = null;
+            if (post.getMedia() != null) {
+                if (post.getMedia() instanceof ImageAttachement) {
+                    imageUrl = ((ImageAttachement) post.getMedia()).getImage_url();
+                } else if (post.getMedia() instanceof LinkAttachement) {
+                    link = ((LinkAttachement) post.getMedia()).getLink();
+                }
+            }
+
+            psb.createPost(username, post.getContent().trim(), imageUrl, link);
+            return Response.status(Response.Status.CREATED)
+                    .entity("{\"message\":\"Post created successfully.\"}")
+                    .build();
+        } catch (RuntimeException e) {
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity("{\"error\":\"" + e.getMessage() + "\"}")
                     .build();
