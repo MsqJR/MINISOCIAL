@@ -191,6 +191,7 @@ public class UserRest
         }
 
         try {
+
             usb.RejectFriend(username, friend.getName());
             return Response.ok("{\"message\":\"Friend request rejected.\"}").build();
         } catch (Exception e) {
