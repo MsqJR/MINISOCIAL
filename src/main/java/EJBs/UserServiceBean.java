@@ -206,8 +206,8 @@ public class UserServiceBean implements UserService {
     }
 
     @Override
-    public void RejectFriend(String currentUserEmail, String friendName) {
-        User user = findUserByEmail(currentUserEmail);
+    public void RejectFriend(String currentUserName, String friendName) {
+        User user = findUserByName(currentUserName);
         User friend = findUserByName(friendName);
 
         if (user == null || friend == null) {
