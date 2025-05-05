@@ -19,4 +19,5 @@ public abstract class MediaAttachement {
     public void setMediaID(long mediaID) {
         this.mediaID = mediaID;
     }
+    //j
 }

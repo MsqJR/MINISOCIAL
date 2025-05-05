@@ -47,4 +47,5 @@ public class MediaAttachementAdapter implements JsonbAdapter<MediaAttachement, J
         }
         return null;
     }
+    //
 }

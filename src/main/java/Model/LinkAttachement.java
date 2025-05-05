@@ -15,4 +15,5 @@ public class LinkAttachement extends MediaAttachement {
     public void setLink(String link) {
         this.link = link;
     }
+    //
 }

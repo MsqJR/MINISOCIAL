@@ -54,4 +54,5 @@ public class Post {
     public void setMedia(MediaAttachement media) {
         this.media = media;
     }
+    //
 }
