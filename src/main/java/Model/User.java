@@ -48,7 +48,7 @@ public class User {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "requester_id"))
     private Set<User> friendRequests = new HashSet<>();
-/*************************************************************************/
+    /*************************************************************************/
     @JsonbTransient
     @ManyToMany
     @JoinTable(name = "user_friends",
@@ -59,10 +59,6 @@ public class User {
     @OneToOne
     private Profile user_profile;
     /*************************************************************************/
-    @JsonbTransient
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    private List<Post> posts = new ArrayList<>();
-    /**************************************************************************/
 
     public long getId() {
         return ID;
@@ -119,7 +115,9 @@ public class User {
     public void setFriends(Set<User> friends) {
         this.friends = friends;
     }
-
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonbTransient
+    private List<Post> posts = new ArrayList<>();
     public List<Post> getPosts()
     {
         return posts;
