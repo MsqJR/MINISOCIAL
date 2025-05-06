@@ -24,12 +24,6 @@ import java.util.List;
 import Model.ImageAttachement;
 import Model.LinkAttachement;
 
-
-
-
-
-
-
 import EJBs.UserServiceBean;
 
 @Path("/Users")
@@ -39,6 +33,11 @@ public class UserRest
 {
     @EJB
     private UserService usb;
+
+    @EJB(beanName = "PostServiceBean")
+    private PostService psb;
+
+
 
     @POST
     @Path("/login")
@@ -217,9 +216,6 @@ public class UserRest
         }
     }
     /*********************************************************************************************************************/
-    @EJB(beanName = "PostServiceBean")
-    private PostService psb;
-
     @POST
     @Path("/{username}/posts")
     public Response createPost(@PathParam("username") String username, Post post) {
@@ -229,7 +225,6 @@ public class UserRest
                         .entity("{\"error\": \"Post content must not be empty.\"}")
                         .build();
             }
-
             String imageUrl = null;
             String link = null;
             if (post.getMedia() != null) {
@@ -239,7 +234,6 @@ public class UserRest
                     link = ((LinkAttachement) post.getMedia()).getLink();
                 }
             }
-
             psb.createPost(username, post.getContent().trim(), imageUrl, link);
             return Response.status(Response.Status.CREATED)
                     .entity("{\"message\":\"Post created successfully.\"}")

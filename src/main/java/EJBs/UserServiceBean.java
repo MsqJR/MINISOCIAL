@@ -18,7 +18,8 @@ import Model.User;
 import Service.UserService;
 
 @Stateless
-public class UserServiceBean implements UserService {
+public class UserServiceBean implements UserService
+{
 
     @PersistenceContext
     private EntityManager em;
@@ -104,6 +105,7 @@ public class UserServiceBean implements UserService {
         }
 
         em.merge(existingUser);
+        System.out.println("Successfully updated user profile");
     }
 
     @Override
@@ -175,6 +177,7 @@ public class UserServiceBean implements UserService {
         }
         friend.getFriendRequests().add(user);
         em.merge(friend);
+        System.out.println("received friend request from " + friend.getName());
     }
 
     @Override
@@ -217,6 +220,7 @@ public class UserServiceBean implements UserService {
         if (user.getFriendRequests().contains(friend)) {
             user.getFriendRequests().remove(friend);
             em.merge(user);
+            System.out.println("Friend request rejected ");
         }
     }
 
