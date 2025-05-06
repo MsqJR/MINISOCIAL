@@ -51,5 +51,5 @@ public Response DeletePost(@PathParam("postID") long postID,Post post) {
                     .build();
         }
     }
-
+//TODO need to complete all rests to test all methods of postmanagement
 }
