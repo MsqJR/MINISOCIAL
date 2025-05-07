@@ -3,9 +3,7 @@ package Rests;
 
 import Model.*;
 import Service.UserService;
-import jakarta.annotation.PostConstruct;
 import jakarta.ejb.EJB;
-import jakarta.inject.Inject;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -18,11 +16,10 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.POST;
 
-import java.util.ArrayList;
 import java.util.List;
 import Model.ImageAttachement;
 import Model.LinkAttachement;
-import EJBs.UserServiceBean;
+
 
 @Path("/Users")
 @Produces(MediaType.APPLICATION_JSON)
@@ -185,8 +182,6 @@ public class UserRest
                     .build();
         }
     }
-
-    /// /test
     /***********************************************************************************************************/
     @POST
     @Path("/reject/{username}/friends")

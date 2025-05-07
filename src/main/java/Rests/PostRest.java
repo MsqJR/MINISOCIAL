@@ -33,7 +33,7 @@ public class PostRest
     public Response updatePost(@PathParam("postID") long postID, Post updatedPost)
     {
         try {
-            psb.UpdateProfile(postID, updatedPost);
+            psb.UpdatePost(postID, updatedPost);
             return Response.ok("{\"message\":\"Post updated successfully\"}").build();
         } catch (Exception e) {
             return Response.status(Response.Status.BAD_REQUEST)
@@ -55,4 +55,41 @@ public class PostRest
                     .build();
         }
     }
+/**********************************************************************************************/
+
+    public static class Request {
+        public String username;
+        public String text;
+    }
+
+    @POST
+    @Path("/addComment/{postId}")
+    public Response addComment(@PathParam("postId") long postId, Request request) {
+        try {
+            psb.AddCommentTOPost(postId, request.username, request.text);
+            return Response.ok("{\"message\":\"Comment added successfully\"}").build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("{\"error\":\"" + e.getMessage() + "\"}")
+                    .build();
+        }
+    }
+/*********************************************************************************************/
+
+@POST
+@Path("/addLike/{postId}")
+public Response AddLike(@PathParam("postId") long postId,Request request)
+{
+    try {
+        psb.likePost(postId, request.username);
+        return Response.ok("{\"message\":\"Liked added successfully\"}").build();
+    } catch (Exception e) {
+        return Response.status(Response.Status.BAD_REQUEST)
+                .entity("{\"error\":\"" + e.getMessage() + "\"}")
+                .build();
+    }
+
+
+}
+
 }

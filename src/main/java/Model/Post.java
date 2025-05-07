@@ -1,9 +1,12 @@
 package Model;
 
+import jakarta.json.bind.annotation.JsonbTransient;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.json.bind.annotation.JsonbTypeAdapter;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "posts")
@@ -27,10 +30,21 @@ public class Post {
     @JsonbTypeAdapter(MediaAttachementAdapter.class)
     private MediaAttachement media;
 
+
+    @JsonbTransient
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Comment> comments = new ArrayList<>();
+
+    @JsonbTransient
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Like> likes = new ArrayList<>();
+
+
     public Post() {
         this.createdAt = LocalDateTime.now();
     }
-    public Post(String content,long postId, User user, MediaAttachement media) {
+    public Post(String content,long postId, User user, MediaAttachement media)
+    {
         this.content = content;
         this.user = user;
         this.media = media;
@@ -68,4 +82,19 @@ public class Post {
         this.media = media;
     }
 
+    public List<Comment> getComments() {
+        return comments;
+    }
+
+    public void setComments(List<Comment> comments) {
+        this.comments = comments;
+    }
+
+    public List<Like> getLikes() {
+        return likes;
+    }
+
+    public void setLikes(List<Like> likes) {
+        this.likes = likes;
+    }
 }

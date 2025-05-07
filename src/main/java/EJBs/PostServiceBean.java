@@ -1,16 +1,17 @@
 package EJBs;
 
+import Model.*;
 import Service.PostService;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
-import Model.ImageAttachement;
-import Model.LinkAttachement;
-import Model.Post;
-import Model.User;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Stateless
 public class PostServiceBean implements PostService
@@ -34,7 +35,7 @@ public class PostServiceBean implements PostService
     private Post findPostById(long id) {
         try {
             TypedQuery<Post> query = em.createQuery(
-                    "SELECT p FROM Post p WHERE p.ID = :id", Post.class);
+                    "SELECT p FROM Post p WHERE p.id = :id", Post.class);
             query.setParameter("id", id);
             return query.getSingleResult();
         }
@@ -72,20 +73,44 @@ public class PostServiceBean implements PostService
     }
  /*****************************************************************************************/
  @Override
- public List<Post> GetAllPoststhatUserHasPosted(String username)
- {
+ public List<Object> GetAllPoststhatUserHasPosted(String username) {
      User user = findUserByName(username);
      if (user == null) {
          throw new RuntimeException("User not found: " + username);
      }
+
      TypedQuery<Post> query = em.createQuery(
              "SELECT p FROM Post p WHERE p.user = :user", Post.class);
      query.setParameter("user", user);
-     return query.getResultList();
+     List<Post> posts = query.getResultList();
+
+     List<Object> result = new ArrayList<>();
+
+     for (Post post : posts) {
+         List<Comment> comments = em.createQuery(
+                         "SELECT c FROM Comment c WHERE c.post = :post", Comment.class)
+                 .setParameter("post", post)
+                 .getResultList();
+
+         List<Like> likes = em.createQuery(
+                         "SELECT l FROM Like l WHERE l.post = :post", Like.class)
+                 .setParameter("post", post)
+                 .getResultList();
+
+         Map<String, Object> postMap = new HashMap<>();
+         postMap.put("postId", post.getPostId());
+         postMap.put("content", post.getContent());
+         postMap.put("user", post.getUser());
+         postMap.put("comments", comments.isEmpty() ? null : comments);
+         postMap.put("likes", likes.isEmpty() ? null : likes);
+
+         result.add(postMap);
+     }
+     return result;
  }
  /***********************************************************************************/
  @Override
- public void UpdateProfile(long postID, Post newPost) {
+ public void UpdatePost(long postID, Post newPost) {
      Post existingPost = em.find(Post.class, postID);
      if (existingPost == null) {
          throw new RuntimeException("Post not found with ID: " + postID);
@@ -105,6 +130,48 @@ public class PostServiceBean implements PostService
      em.remove(post);
      System.out.println("Successfully deleted post");
  }
+
+    @Override
+    public void AddCommentTOPost(long postID, String username, String commentText) {
+        Post post = findPostById(postID);
+        User user = findUserByName(username);
+
+        if (post == null || user == null) {
+            throw new RuntimeException("Post or User not found.");
+        }
+
+        if (!user.getFriends().contains(post.getUser()) && !post.getUser().equals(user)) {
+            throw new RuntimeException("You can only comment on your own or your friend's post.");
+        }
+
+        Comment comment = new Comment();
+        comment.setPost(post);
+        comment.setUser(user);
+        comment.setText(commentText);
+        comment.setCommentedAt(LocalDateTime.now());
+        em.persist(comment);
+
+        post.getComments().add(comment);
+        em.merge(post);
+    }
+/*********************************************************************************************/
+    @Override
+    public void likePost(long postId, String username)
+    {
+        Post post = findPostById(postId);
+        User user = findUserByName(username);
+        if (post == null || user == null) {
+            throw new RuntimeException("Post or User not found.");
+        }
+
+        Like like = new Like();
+        like.setPost(post);
+        like.setUser(user);
+        em.persist(like);
+
+        post.getLikes().add(like);
+        em.merge(post);
+    }
 
 }
 
