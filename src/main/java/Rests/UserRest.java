@@ -245,12 +245,6 @@ public class UserRest
         return "Hello World";
     }
 
-    @GET
-    @Path("/hi")
-    public String hi()
-    {
-        return "hi mark";
-    }
 /***********************************************************************************************************/
 
 }
