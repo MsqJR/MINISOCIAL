@@ -7,6 +7,8 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
+import java.util.List;
+
 @Path("/Posts")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
@@ -16,7 +18,7 @@ public class PostRest
     @EJB(beanName = "PostServiceBean")
     private PostService psb;
 
-    @GET
+   /* @GET
     @Path("/getposts/{username}")
     public Response getPosts(@PathParam("username") String username) {
         try {
@@ -27,7 +29,7 @@ public class PostRest
                     .build();
         }
     }
-
+*/
     @POST
     @Path("/updateposts/{postID}")
     public Response updatePost(@PathParam("postID") long postID, Post updatedPost)
@@ -55,7 +57,7 @@ public class PostRest
                     .build();
         }
     }
-/**********************************************************************************************/
+    /**********************************************************************************************/
 
     public static class Request {
         public String username;
@@ -74,22 +76,22 @@ public class PostRest
                     .build();
         }
     }
-/*********************************************************************************************/
+    /*********************************************************************************************/
 
-@POST
-@Path("/addLike/{postId}")
-public Response AddLike(@PathParam("postId") long postId,Request request)
-{
-    try {
-        psb.likePost(postId, request.username);
-        return Response.ok("{\"message\":\"Liked added successfully\"}").build();
-    } catch (Exception e) {
-        return Response.status(Response.Status.BAD_REQUEST)
-                .entity("{\"error\":\"" + e.getMessage() + "\"}")
-                .build();
+    @POST
+    @Path("/addLike/{postId}")
+    public Response AddLike(@PathParam("postId") long postId,Request request)
+    {
+        try {
+            psb.likePost(postId, request.username);
+            return Response.ok("{\"message\":\"Liked added successfully\"}").build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("{\"error\":\"" + e.getMessage() + "\"}")
+                    .build();
+        }
+
+
     }
-
-
-}
 
 }

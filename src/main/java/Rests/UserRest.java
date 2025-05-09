@@ -239,6 +239,21 @@ public class UserRest
     }
     /***********************************************************************************************************/
     @GET
+    @Path("/Posts/feed/{username}")
+    public Response getFeed(@PathParam("username") String username) {
+        try {
+            List<Object> feed = psb.getUserFeed(username);
+            if (feed.isEmpty()) {
+                return Response.ok("{\"message\": \"No posts found in feed.\"}").build();
+            }
+            return Response.ok(feed).build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("{\"error\":\"Failed to fetch feed: " + e.getMessage() + "\"}")
+                    .build();
+        }
+    }
+    @GET
     @Path("/hello")
     public String hello()
     {

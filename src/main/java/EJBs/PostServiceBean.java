@@ -43,7 +43,7 @@ public class PostServiceBean implements PostService
             return null;
         }
     }
-/****************************************************************************************/
+    /****************************************************************************************/
     @Override
     public void createPost(String username, String content, String imageUrl, String link) {
         User user = findUserByName(username);
@@ -71,65 +71,66 @@ public class PostServiceBean implements PostService
 
         em.persist(post);
     }
- /*****************************************************************************************/
- @Override
- public List<Object> GetAllPoststhatUserHasPosted(String username) {
-     User user = findUserByName(username);
-     if (user == null) {
-         throw new RuntimeException("User not found: " + username);
-     }
+    /*****************************************************************************************/
+    @Override
+    public List<Object> getUserFeed(String username) {
+        User user = findUserByName(username);
+        if (user == null) {
+            throw new RuntimeException("User not found: " + username);
+        }
 
-     TypedQuery<Post> query = em.createQuery(
-             "SELECT p FROM Post p WHERE p.user = :user", Post.class);
-     query.setParameter("user", user);
-     List<Post> posts = query.getResultList();
+        TypedQuery<Post> query = em.createQuery(
+                "SELECT p FROM Post p WHERE p.user = :user OR p.user IN (SELECT f FROM User u JOIN u.friends f WHERE u = :user) ORDER BY p.createdAt DESC",
+                Post.class);
+        query.setParameter("user", user);
+        List<Post> posts = query.getResultList();
 
-     List<Object> result = new ArrayList<>();
+        List<Object> result = new ArrayList<>();
 
-     for (Post post : posts) {
-         List<Comment> comments = em.createQuery(
-                         "SELECT c FROM Comment c WHERE c.post = :post", Comment.class)
-                 .setParameter("post", post)
-                 .getResultList();
+        for (Post post : posts) {
+            List<Comment> comments = em.createQuery(
+                            "SELECT c FROM Comment c WHERE c.post = :post", Comment.class)
+                    .setParameter("post", post)
+                    .getResultList();
 
-         List<Like> likes = em.createQuery(
-                         "SELECT l FROM Like l WHERE l.post = :post", Like.class)
-                 .setParameter("post", post)
-                 .getResultList();
+            List<Like> likes = em.createQuery(
+                            "SELECT l FROM Like l WHERE l.post = :post", Like.class)
+                    .setParameter("post", post)
+                    .getResultList();
 
-         Map<String, Object> postMap = new HashMap<>();
-         postMap.put("postId", post.getPostId());
-         postMap.put("content", post.getContent());
-         postMap.put("user", post.getUser());
-         postMap.put("comments", comments.isEmpty() ? null : comments);
-         postMap.put("likes", likes.isEmpty() ? null : likes);
+            Map<String, Object> postMap = new HashMap<>();
+            postMap.put("postId", post.getPostId());
+            postMap.put("content", post.getContent());
+            postMap.put("user", post.getUser());
+            postMap.put("comments", comments.isEmpty() ? null : comments);
+            postMap.put("likes", likes.isEmpty() ? null : likes);
 
-         result.add(postMap);
-     }
-     return result;
- }
- /***********************************************************************************/
- @Override
- public void UpdatePost(long postID, Post newPost) {
-     Post existingPost = em.find(Post.class, postID);
-     if (existingPost == null) {
-         throw new RuntimeException("Post not found with ID: " + postID);
-     }
-     existingPost.setContent(newPost.getContent());
-     em.merge(existingPost);
-     System.out.println("Successfully updated post");
- }
- /**********************************************************************************/
- @Override
- public void DeletePost(long postID)
- {
-     Post post = findPostById(postID);
-     if (post == null) {
-         throw new RuntimeException("Post not found with ID: " + postID);
-     }
-     em.remove(post);
-     System.out.println("Successfully deleted post");
- }
+            result.add(postMap);
+        }
+        return result;
+    }
+    /***********************************************************************************/
+    @Override
+    public void UpdatePost(long postID, Post newPost) {
+        Post existingPost = em.find(Post.class, postID);
+        if (existingPost == null) {
+            throw new RuntimeException("Post not found with ID: " + postID);
+        }
+        existingPost.setContent(newPost.getContent());
+        em.merge(existingPost);
+        System.out.println("Successfully updated post");
+    }
+    /**********************************************************************************/
+    @Override
+    public void DeletePost(long postID)
+    {
+        Post post = findPostById(postID);
+        if (post == null) {
+            throw new RuntimeException("Post not found with ID: " + postID);
+        }
+        em.remove(post);
+        System.out.println("Successfully deleted post");
+    }
 
     @Override
     public void AddCommentTOPost(long postID, String username, String commentText) {
@@ -154,7 +155,7 @@ public class PostServiceBean implements PostService
         post.getComments().add(comment);
         em.merge(post);
     }
-/*********************************************************************************************/
+    /*********************************************************************************************/
     @Override
     public void likePost(long postId, String username)
     {
@@ -174,5 +175,4 @@ public class PostServiceBean implements PostService
     }
 
 }
-
 

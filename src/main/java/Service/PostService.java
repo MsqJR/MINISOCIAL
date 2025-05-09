@@ -10,7 +10,7 @@ import java.util.List;
 public interface PostService
 {
     void createPost(String username, String content, String imageUrl, String link);
-    public List<Object> GetAllPoststhatUserHasPosted(String username);
+    List<Object> getUserFeed(String username);
     void UpdatePost(long postID, Post newPost);
     void DeletePost(long postID);
     void AddCommentTOPost(long postID, String username, String commentText);
