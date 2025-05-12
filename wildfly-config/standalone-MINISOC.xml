@@ -464,7 +464,7 @@
                 </in-vm-acceptor>
                 <jms-queue name="ExpiryQueue" entries="java:/jms/queue/ExpiryQueue"/>
                 <jms-queue name="DLQ" entries="java:/jms/queue/DLQ"/>
-                <jms-queue name="NotificationQueue" entries="java:/queue/NotificationQueue"/>
+                <jms-queue name="NotificationQueue" entries="java:/jms/queue/NotificationQueue"/>
                 <jms-topic name="GroupNotificationTopic" entries="java:/jms/GroupNotificationTopic"/>
                 <connection-factory name="InVmConnectionFactory" entries="java:/ConnectionFactory" connectors="in-vm"/>
                 <connection-factory name="RemoteConnectionFactory" entries="java:jboss/exported/jms/RemoteConnectionFactory" connectors="http-connector"/>
@@ -558,9 +558,4 @@
             <remote-destination host="${jboss.mail.server.host:localhost}" port="${jboss.mail.server.port:25}"/>
         </outbound-socket-binding>
     </socket-binding-group>
-    <deployments>
-        <deployment name="MiniSocial-1.0-SNAPSHOT" runtime-name="MiniSocial-1.0-SNAPSHOT.war">
-            <fs-exploded path="/home/mark/IdeaProjects/MINISOCIAL/target/MiniSocial-1.0-SNAPSHOT"/>
-        </deployment>
-    </deployments>
 </server>

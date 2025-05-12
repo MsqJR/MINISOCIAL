@@ -135,6 +135,7 @@ public class UserServiceBean implements UserService {
         recipient.getFriendRequests().add(sender);
         em.merge(recipient);
         System.out.println("Successfully sent request");
+
     }
 
     @Override
@@ -177,6 +178,7 @@ public class UserServiceBean implements UserService {
         }
         friend.getFriendRequests().add(user);
         em.merge(friend);
+
     }
 
     @Override

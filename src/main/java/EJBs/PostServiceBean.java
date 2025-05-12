@@ -1,5 +1,6 @@
 package EJBs;
 
+import Messaging.NotificationService;
 import Model.*;
 import Service.PostService;
 import jakarta.ejb.EJB;
@@ -21,7 +22,8 @@ public class PostServiceBean implements PostService
     @PersistenceContext
     private EntityManager em;
 
-
+    @EJB(beanName = "NotificationServiceBean" )
+    private NotificationService nss;
 
     /****************************************************************************************/
     private User findUserByName(String name) {
@@ -156,6 +158,10 @@ public class PostServiceBean implements PostService
 
         post.getComments().add(comment);
         em.merge(post);
+
+        nss.sendPostCommentedNotification();
+
+
     }
     /*********************************************************************************************/
     @Override

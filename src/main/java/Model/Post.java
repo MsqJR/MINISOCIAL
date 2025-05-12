@@ -29,14 +29,11 @@ public class Post {
     @JoinColumn(name = "user_id")
     private User user;
 
-    @ManyToOne
-    @JoinColumn(name = "group_id")
-    private Group group;  // Added this field to match the mappedBy in Group class
-
     @OneToOne
     @JoinColumn(name = "media_id")
     @JsonbTypeAdapter(MediaAttachementAdapter.class)
     private MediaAttachement media;
+
 
     @JsonbTransient
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -46,22 +43,16 @@ public class Post {
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Like> likes = new ArrayList<>();
 
+
     public Post() {
         this.createdAt = LocalDateTime.now();
     }
-
-    public Post(String content, User user, MediaAttachement media) {
+    public Post(String content,long postId, User user, MediaAttachement media)
+    {
         this.content = content;
         this.user = user;
         this.media = media;
-        this.createdAt = LocalDateTime.now();
-    }
-
-    public Post(String content, User user, Group group, MediaAttachement media) {
-        this.content = content;
-        this.user = user;
-        this.group = group;
-        this.media = media;
+        this.postId = postId;
         this.createdAt = LocalDateTime.now();
     }
 
@@ -72,11 +63,9 @@ public class Post {
     public void setContent(String content) {
         this.content = content;
     }
-
     public long getPostId() {
         return postId;
     }
-
     public void setPostId(long postId) {
         this.postId = postId;
     }
@@ -87,14 +76,6 @@ public class Post {
 
     public void setUser(User user) {
         this.user = user;
-    }
-
-    public Group getGroup() {
-        return group;
-    }
-
-    public void setGroup(Group group) {
-        this.group = group;
     }
 
     public MediaAttachement getMedia() {
@@ -119,13 +100,5 @@ public class Post {
 
     public void setLikes(List<Like> likes) {
         this.likes = likes;
-    }
-
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
     }
 }

@@ -12,4 +12,13 @@
             <xa-datasource-class>org.h2.jdbcx.JdbcDataSource</xa-datasource-class>
         </driver>
     </drivers>
+
+    <jms-queue name="NotificationQueue"
+               entries="java:/jms/queue/NotificationQueue
+               java:jboss/exported/jms/queue/NotificationQueue"/>
+
+    <jms-topic name="NotificationTopic"
+               entries="java:/jms/topic/NotificationTopic
+               java:jboss/exported/jms/topic/NotificationTopic"/>
+
 </datasources>
