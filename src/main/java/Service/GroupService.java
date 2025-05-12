@@ -15,4 +15,5 @@ public interface GroupService {
     void PromoteUserToBeAdmin(String usercreator,String username,long userid,String groupname);
     void removeGroup(String usercreator,String groupname);
     public List <Group> getAllGroups();
+
 }

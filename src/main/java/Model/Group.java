@@ -14,7 +14,10 @@ import java.util.List;
 public class Group {
     @Transient
     private UserServiceBean USB ;
-
+    @JsonbTransient
+    public User getCreator() {
+        return admins.isEmpty() ? null : admins.get(0);
+    }
 
     @NotNull
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -86,9 +89,7 @@ public class Group {
         this.users = users;
     }
 
-    public User getCreator() {
-        return admins.get(0);
-    }
+    public String getGroupcreator() {return groupcreator;}
     public List<User> addToAdminsList(User user) {
         admins.add(user);
         return admins;
@@ -132,7 +133,7 @@ public class Group {
     public int getGroupId() {return GroupId;}
     public void setGroupId(int groupId) {GroupId = groupId;}
     public String getGroupName() {return groupname;}
-    public String getGroupcreator() {return groupcreator;}
+
 
 
 }
