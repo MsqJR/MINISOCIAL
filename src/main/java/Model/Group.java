@@ -35,7 +35,7 @@ public class Group {
     private List<User> admins = new ArrayList<>();
 
     @JsonbTransient
-    @OneToMany(mappedBy = "group", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "group", cascade = CascadeType.ALL,orphanRemoval = true)
     private List<Post> posts = new ArrayList<>();
 
     private List<String> groupJoinrequests = new ArrayList<>();

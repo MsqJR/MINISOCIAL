@@ -9,7 +9,7 @@ import jakarta.jms.Topic;
 
 @Stateless
 public class NotificationService {
-    @Resource(lookup = "jms/GroupNotificationTopic")
+    @Resource(lookup = "java:/jms/GroupNotificationTopic")
     private Topic groupNotificationTopic;
 
     @Inject
