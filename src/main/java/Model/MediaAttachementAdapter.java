@@ -1,3 +1,4 @@
+
 package Model;
 
 import jakarta.json.bind.adapter.JsonbAdapter;
@@ -47,5 +48,5 @@ public class MediaAttachementAdapter implements JsonbAdapter<MediaAttachement, J
         }
         return null;
     }
-    //
+
 }

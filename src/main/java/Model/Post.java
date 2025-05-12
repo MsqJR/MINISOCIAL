@@ -18,11 +18,7 @@ public class Post {
 
     @NotNull
     private String content;
-    @ManyToOne(optional = true)
-    @JoinColumn(name = "group_id")
-    private Group group;
-    public Group getGroup() {return group;}
-    public void setGroup(Group group) {this.group = group;}
+
     private LocalDateTime createdAt;
 
     @ManyToOne

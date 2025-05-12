@@ -159,7 +159,12 @@ public class PostServiceBean implements PostService
         post.getComments().add(comment);
         em.merge(post);
 
-
+        nss.sendPostCommentedNotification(
+                username,
+                post.getUser().getName() + " commented on your post.",
+                postID,
+                commentText
+        );
     }
     /*********************************************************************************************/
     @Override
@@ -178,7 +183,15 @@ public class PostServiceBean implements PostService
 
         post.getLikes().add(like);
         em.merge(post);
+
+        nss.sendPostLikedNotification(
+                username,
+                post.getUser().getName() + " liked your post.",
+                postId
+        );
+        System.out.println("Successfully liked post");
     }
+
 
 }
 

@@ -16,7 +16,7 @@ public interface UserService
     void SendFriendRequest(String currentUserEmail, String friendName);
     void removeFriend(String currentUserEmail, String friendName);
     void acceptFriendRequest(String userEmail,String friendName);
-    void RecieveFriendRequest(User user);
+    void RecieveFriendRequest(String username,String friendName);
      User findUserByName(String Name);
     void RejectFriend(String currentUserName, String friendName);
     List<User> viewConnections(String userName);

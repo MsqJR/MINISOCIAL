@@ -1,6 +1,7 @@
 package Model;
 
 
+import EJBs.UserServiceBean;
 import jakarta.json.bind.annotation.JsonbTransient;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -11,6 +12,10 @@ import java.util.List;
 @Entity
 @Table(name = "groups")
 public class Group {
+    @Transient
+    private UserServiceBean USB ;
+
+
     @NotNull
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
@@ -28,27 +33,40 @@ public class Group {
 
     @JsonbTransient
     @ManyToMany
+    @JoinTable(
+            name = "group_users",
+            joinColumns = @JoinColumn(name = "group_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
     private List<User> users = new ArrayList<>();
 
     @JsonbTransient
     @ManyToMany
+    @JoinTable(
+            name = "group_admins",
+            joinColumns = @JoinColumn(name = "group_id"),
+            inverseJoinColumns = @JoinColumn(name = "admin_id")
+    )
     private List<User> admins = new ArrayList<>();
 
-    @JsonbTransient
-    @OneToMany(mappedBy = "group", cascade = CascadeType.ALL,orphanRemoval = true)
-    private List<Post> posts = new ArrayList<>();
+
 
     private List<String> groupJoinrequests = new ArrayList<>();
 
     @JsonbTransient
     @ManyToMany
+    @JoinTable(
+            name = "group_waiting_users",
+            joinColumns = @JoinColumn(name = "group_id"),
+            inverseJoinColumns = @JoinColumn(name = "waiting_user_id")
+    )
     private List<User> waitingUsersList = new ArrayList<>();
 
     private String groupcreator;
 
 
     public Group() {}
-    public Group(String usercreator,String groupname, String groupDescription,String groupType) {
+    public Group(String groupname, String groupDescription,String groupType,String usercreator) {
         this.groupname = groupname;
         this.groupDescription = groupDescription;
         this.groupType = groupType;
@@ -84,11 +102,31 @@ public class Group {
         users.remove(user);
         return users;
     }
+    public List<User> removeFromWaitingList(User user) {
+        waitingUsersList.remove(user);
+        return waitingUsersList;
+    }
+    public List<User> removeFromAdminList(User user) {
+        User user1 = admins.get(0);
+
+        if (user.getId()== user1.getId())
+        {
+            admins.remove(user);
+            return admins;
+        }
+        else {
+            throw new IllegalArgumentException("User is not an admin");
+        }
+
+    }
     public List<User> addToWaitingUsersList(User user){
         waitingUsersList.add(user);
         return waitingUsersList;
     }
-
+    public void setGroupname(String groupname){
+        this.groupname = groupname;
+    }
+    public String getGroupType() {return groupType;}
     public String getGroupDescription() {return groupDescription;}
     public void setGroupDescription(String groupDescription) {this.groupDescription = groupDescription;}
     public int getGroupId() {return GroupId;}

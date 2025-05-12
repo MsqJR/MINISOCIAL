@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 
-
+import Messaging.NotificationService;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
@@ -24,6 +24,8 @@ public class UserServiceBean implements UserService {
     @PersistenceContext
     private EntityManager em;
 
+    @EJB(beanName = "NotificationServiceBean" )
+    private NotificationService nss;
 
     @Override
     public void registerUser(String email, String password,String UserName) {
@@ -170,15 +172,29 @@ public class UserServiceBean implements UserService {
     }
 
     @Override
-    public void RecieveFriendRequest(User user)
+    public void RecieveFriendRequest(String username,String friendname)
     {
-        User friend = findUserByName(user.getName());
-        if (friend == null) {
-            throw new RuntimeException("No user found with name: " + user.getName());
+        User user = findUserByName(username);
+        if (user == null) {
+            user = findUserByEmail(username);
         }
-        friend.getFriendRequests().add(user);
-        em.merge(friend);
+        User friend = findUserByName(friendname);
+        if (user == null) {
+            throw new RuntimeException("User not found: " + username);
+        }
+        if (friend == null) {
+            throw new RuntimeException("Friend not found: " + friendname);
+        }
+        if (friend.getFriendRequests().contains(user))
+        {
 
+            System.out.println("Friend request received from " + friend.getName() + " by " + user.getName());
+            nss.sendFriendRequestNotification(user.getName(),friend.getName());
+        }
+   else
+        {
+            System.out.println("No friend request found from " + friendname);
+        }
     }
 
     @Override

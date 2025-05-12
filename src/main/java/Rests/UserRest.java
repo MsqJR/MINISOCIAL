@@ -143,6 +143,26 @@ public class UserRest
         }
     }
     /***********************************************************************************************************/
+    @GET
+    @Path("/recieve/{username}/friends")
+    public Response RecieveFriendRequest (@PathParam("username") String username, @QueryParam("friendName") String friendName)
+    {
+        try {
+            if (friendName == null || friendName.isEmpty()) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("{\"error\": \"Friend name must be provided.\"}")
+                        .build();
+            }
+            usb.RecieveFriendRequest(username, friendName);
+            return Response.ok("{\"message\":\"Friend request received.\"}").build();
+        }
+        catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("{\"error\":\"" + e.getMessage() + "\"}")
+                    .build();
+        }
+    }
+    /***********************************************************************************************************/
     @POST
     @Path("/accept/{username}/friends")
     public Response acceptSendRequest(@PathParam("username") String username, User friend)
@@ -210,6 +230,8 @@ public class UserRest
 
     @POST
     @Path("/{username}/posts")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
     public Response createPost(@PathParam("username") String username, Post post) {
         try {
             if (post == null || post.getContent() == null || post.getContent().trim().isEmpty()) {
@@ -261,7 +283,6 @@ public class UserRest
         return "Hello World";
     }
 
-    //MOOO
 
 /***********************************************************************************************************/
 

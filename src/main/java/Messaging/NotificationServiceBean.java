@@ -2,25 +2,11 @@ package Messaging;
 
 import jakarta.annotation.Resource;
 import jakarta.ejb.Stateless;
-import jakarta.jms.Connection;
-import jakarta.jms.ConnectionFactory;
-import jakarta.jms.JMSException;
-import jakarta.jms.MessageProducer;
-import jakarta.jms.ObjectMessage;
-import jakarta.jms.Queue;
-import jakarta.jms.Session;
+import jakarta.jms.*;
 
-import java.util.UUID;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-/**
- * Implementation of the NotificationService that uses JMS to send notifications
- */
 @Stateless
-public class NotificationServiceBean implements NotificationService {
-
-    private static final Logger logger = Logger.getLogger(NotificationServiceBean.class.getName());
+public class NotificationServiceBean implements NotificationService
+{
 
     @Resource(mappedName = "java:/ConnectionFactory")
     private ConnectionFactory connectionFactory;
@@ -29,96 +15,62 @@ public class NotificationServiceBean implements NotificationService {
     private Queue notificationQueue;
 
     @Override
-    public void sendNotification(NotificationEvent event) {
-        // Generate a unique ID for the notification
-        event.setId(UUID.randomUUID().toString());
+    public void sendFriendRequestNotification(String sender, String recipient) {
+        NotificationEvent event = new NotificationEvent(
+                NotificationEvent.EventType.FRIEND_REQUEST_RECEIVED,
+                sender,
+                recipient,
+                sender + " sent you a friend request"
+        );
+        sendJmsMessage(event);
+    }
 
-        Connection connection = null;
-        try {
-            connection = connectionFactory.createConnection();
-            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-            MessageProducer producer = session.createProducer(notificationQueue);
+    @Override
+    public void sendPostLikedNotification(String liker, String postOwner, Long postId) {
+        NotificationEvent event = new NotificationEvent(
+                NotificationEvent.EventType.POST_LIKED,
+                liker,
+                postOwner,
+                liker + " liked your post",
+                postId
+        );
+        sendJmsMessage(event);
+    }
 
-            // Create and send the message
+    @Override
+    public void sendPostCommentedNotification(String commenter, String postOwner, Long postId, String comment) {
+        String preview = comment.length() > 50 ? comment.substring(0, 47) + "..." : comment;
+        NotificationEvent event = new NotificationEvent(
+                NotificationEvent.EventType.POST_COMMENTED,
+                commenter,
+                postOwner,
+                commenter + " commented: \"" + preview + "\"",
+                postId
+        );
+        sendJmsMessage(event);
+    }
+
+    @Override
+    public void sendGroupJoinLeaveNotification(String username, String groupName, boolean isJoin) {
+        NotificationEvent event = new NotificationEvent(
+                NotificationEvent.EventType.GROUP_JOIN_LEAVE,
+                username,
+                groupName,
+                isJoin
+        );
+        sendJmsMessage(event);
+    }
+
+    private void sendJmsMessage(NotificationEvent event) {
+        try (Connection connection = connectionFactory.createConnection();
+             Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+             MessageProducer producer = session.createProducer(notificationQueue)) {
+
             ObjectMessage message = session.createObjectMessage(event);
             producer.send(message);
 
-            logger.info("Sent notification: " + event.toString());
         } catch (JMSException e) {
-            logger.log(Level.SEVERE, "Error sending notification", e);
-        } finally {
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (JMSException e) {
-                    logger.log(Level.WARNING, "Error closing JMS connection", e);
-                }
-            }
+            throw new RuntimeException("Failed to send JMS message", e);
         }
-    }
-
-    @Override
-    public void sendFriendRequestNotification(String senderUsername, String recipientUsername) {
-        String message = senderUsername + " has sent you a friend request";
-        NotificationEvent event = new NotificationEvent(
-                NotificationEvent.EventType.FRIEND_REQUEST_RECEIVED,
-                senderUsername,
-                recipientUsername,
-                message
-        );
-        sendNotification(event);
-    }
-
-    @Override
-    public void sendPostLikedNotification(String likerUsername, String postOwnerUsername, Long postId) {
-        String message = likerUsername + " liked your post";
-        NotificationEvent event = new NotificationEvent(
-                NotificationEvent.EventType.POST_LIKED,
-                likerUsername,
-                postOwnerUsername,
-                message,
-                postId
-        );
-        sendNotification(event);
-    }
-
-    @Override
-    public void sendPostCommentedNotification(String commenterUsername, String postOwnerUsername, Long postId, String commentText) {
-        // Truncate comment text if it's too long
-        String commentPreview = commentText.length() > 50 ? commentText.substring(0, 47) + "..." : commentText;
-        String message = commenterUsername + " commented on your post: \"" + commentPreview + "\"";
-
-        NotificationEvent event = new NotificationEvent(
-                NotificationEvent.EventType.POST_COMMENTED,
-                commenterUsername,
-                postOwnerUsername,
-                message,
-                postId
-        );
-        sendNotification(event);
-    }
-
-    @Override
-    public void sendFriendRequestAcceptedNotification(String accepterUsername, String requesterUsername) {
-        String message = accepterUsername + " accepted your friend request";
-        NotificationEvent event = new NotificationEvent(
-                NotificationEvent.EventType.FRIEND_REQUEST_ACCEPTED,
-                accepterUsername,
-                requesterUsername,
-                message
-        );
-        sendNotification(event);
-    }
-
-    @Override
-    public void sendFriendRequestRejectedNotification(String rejecterUsername, String requesterUsername) {
-        String message = rejecterUsername + " rejected your friend request";
-        NotificationEvent event = new NotificationEvent(
-                NotificationEvent.EventType.FRIEND_REQUEST_REJECTED,
-                rejecterUsername,
-                requesterUsername,
-                message
-        );
-        sendNotification(event);
     }
 }

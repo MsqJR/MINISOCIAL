@@ -18,15 +18,18 @@ public class GroupServiceBean implements GroupService {
     @PersistenceContext
     private EntityManager em;
 
+
+
     @Override
-    public void createGroup(String usercreator,long userid, String groupName, String groupDescription,String groupType) {
-        UserServiceBean USB = new UserServiceBean();
-        User UserCreat = USB.findUserById(userid);
-        if (UserCreat == null) {
+    public void createGroup(long userid, String groupName, String groupDescription,String groupType) {
+
+        User UserCreate = em.find(User.class, userid);
+        String usercreator = UserCreate.getName();
+        if (UserCreate == null) {
             throw new RuntimeException("User not found with ID: " + usercreator);
         }
-        Group newgroup = new Group(usercreator,groupName,groupDescription,groupType);
-        newgroup.setAdmins(newgroup.addToAdminsList(UserCreat));
+        Group newgroup = new Group(groupName,groupDescription,groupType,usercreator);
+        newgroup.setAdmins(newgroup.addToAdminsList(UserCreate));
         em.persist(newgroup);
     }
 
@@ -51,8 +54,9 @@ public class GroupServiceBean implements GroupService {
         }
     }
     @Override
-    public void addpost(User user, String groupName, Post post) {
-
+    public void addpost(String username, String groupName, String content,String imageUrl,String link) {
+        /*PostServiceBean PSB = new PostServiceBean();
+        PSB.createPost(username,content,imageUrl,link);*/
     }
     @Override
     public void leaveGroup(String username,int  userid, String groupname) {
@@ -103,8 +107,23 @@ public class GroupServiceBean implements GroupService {
         else {
             em.remove(existgroup);
             System.out.println("Group removed");
-        }
-    }
+   }
+}
 
+
+@Override
+public List <Group> getAllGroups()
+{
+    try {
+        TypedQuery<Group> q = em.createQuery("SELECT g FROM Group g", Group.class);
+        return q.getResultList();
+    } catch (NoResultException e) {
+        return new java.util.ArrayList<>();
+    }
+    catch (Exception e)
+    {
+        throw new RuntimeException("Error retrieving all groups", e);
+    }
+}
 
 }
