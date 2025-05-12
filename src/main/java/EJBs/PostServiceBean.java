@@ -159,8 +159,6 @@ public class PostServiceBean implements PostService
         post.getComments().add(comment);
         em.merge(post);
 
-        nss.sendPostCommentedNotification();
-
 
     }
     /*********************************************************************************************/
