@@ -74,7 +74,33 @@ public class GroupRest {
                     .build();
         }
     }
-
+    @POST
+    @Path("/promoteToAdmin")
+    public Response promoteUserToAdmin(GroupJoinRequest request) {
+        try {
+            if (request.getUsercreator() == null || request.getUsercreator().isEmpty()) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("{\"error\":\"Creator username is required\"}")
+                        .build();
+            }
+            if (request.getUsername() == null || request.getUsername().isEmpty()) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("{\"error\":\"Username is required\"}")
+                        .build();
+            }
+            if (request.getGroupname() == null || request.getGroupname().isEmpty()) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("{\"error\":\"Group name is required\"}")
+                        .build();
+            }
+            gsb.PromoteUserToBeAdmin(request.getUsercreator(), request.getUsername(), request.getUserid(), request.getGroupname());
+            return Response.ok("{\"message\":\"User promoted to admin successfully\"}").build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("{\"error\":\"" + e.getMessage() + "\"}")
+                    .build();
+        }
+    }
     @POST
     @Path("/joinGroup")
     public Response joinGroupRequest(GroupJoinRequest request) {
