@@ -100,8 +100,8 @@ public class GroupRest {
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity("{\"error\":\"" + e.getMessage() + "\"}")
                     .build();
-   }
-}
+        }
+    }
 
 
 }

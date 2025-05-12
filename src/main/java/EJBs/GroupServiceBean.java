@@ -48,23 +48,15 @@ public class GroupServiceBean implements GroupService {
             throw new RuntimeException("User or Group not found.");
         }
 
-        // If groupType is null, fallback to group.getGroupType()
-        if (groupType == null || groupType.trim().isEmpty()) {
-            groupType = group.getGroupType();
-        }
-
-        if (groupType != null && groupType.equalsIgnoreCase("public")) {
+        if (groupType.equalsIgnoreCase("public")) {
             group.addToUsersList(user);
             notificationService.sendJoinNotification(username, groupname);
             em.merge(group);
-        } else if (groupType != null && groupType.equalsIgnoreCase("private")) {
+        } else if (groupType.equalsIgnoreCase("private")) {
             group.setWaitingUsersList(group.addToWaitingUsersList(user));
             em.merge(group);
-        } else {
-            throw new RuntimeException("Invalid or missing group type.");
         }
     }
-
 
     @Override
     public void leaveGroup(String username, int userid, String groupname) {
@@ -74,7 +66,6 @@ public class GroupServiceBean implements GroupService {
         if (user == null || group == null) {
             throw new RuntimeException("User or Group not found.");
         }
-
 
         group.setUsers(group.removeFromUsersList(user));
         notificationService.sendLeaveNotification(username, groupname);
@@ -140,8 +131,7 @@ public class GroupServiceBean implements GroupService {
     }
 
     @Override
-    public void addpost(String username, String groupName, String content, String imageUrl, String link)
-    {
+    public void addpost(String username, String groupName, String content, String imageUrl, String link) {
         // Implementation pending: integrate with PostServiceBean when ready
     }
 }
