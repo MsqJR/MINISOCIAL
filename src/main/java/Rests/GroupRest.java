@@ -128,6 +128,28 @@ public class GroupRest {
                     .build();
         }
     }
+    @POST
+    @Path("/leaveGroup")
+    public Response leaveGroup(GroupLeaveRequest request) {
+        try {
+            if (request.getUsername() == null || request.getUsername().isEmpty()) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("{\"error\":\"Username is required\"}")
+                        .build();
+            }
+            if (request.getGroupname() == null || request.getGroupname().isEmpty()) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("{\"error\":\"Group name is required\"}")
+                        .build();
+            }
+            gsb.leaveGroup(request.getUsername(), (int) request.getUserid(), request.getGroupname());
+            return Response.ok("{\"message\":\"User left group successfully\"}").build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("{\"error\":\"" + e.getMessage() + "\"}")
+                    .build();
+        }
+    }
 
 
 }
