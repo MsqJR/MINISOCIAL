@@ -5,7 +5,7 @@
 ### Option 1: Using the provided configuration file
 1. Copy the configuration file from the project:
    ```bash
-   cp wildfly-config/standalone.xml $WILDFLY_HOME/standalone/configuration/
+   cp wildfly-config/standalone-MINISOC.xml $WILDFLY_HOME/standalone/configuration/
    ```
 2. Restart WildFly server
 
