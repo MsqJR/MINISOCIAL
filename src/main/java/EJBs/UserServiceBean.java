@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Set;
 
 
+
+import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
@@ -21,6 +23,7 @@ public class UserServiceBean implements UserService {
 
     @PersistenceContext
     private EntityManager em;
+
 
     @Override
     public void registerUser(String email, String password,String UserName) {

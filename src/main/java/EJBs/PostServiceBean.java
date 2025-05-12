@@ -2,6 +2,7 @@ package EJBs;
 
 import Model.*;
 import Service.PostService;
+import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
@@ -19,6 +20,7 @@ public class PostServiceBean implements PostService
 
     @PersistenceContext
     private EntityManager em;
+
 
 
     /****************************************************************************************/

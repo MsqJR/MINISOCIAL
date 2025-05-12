@@ -14,5 +14,5 @@ public interface GroupService {
     Group findGroupByName(String groupname);
     void PromoteUserToBeAdmin(String usercreator,String username,long userid,String groupname);
     void removeGroup(String usercreator,String groupname);
-
+    void approveJoinRequest(String adminUsername, String username, String groupname);
 }

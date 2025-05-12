@@ -6,7 +6,9 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "groups")
@@ -28,11 +30,11 @@ public class Group {
 
     @JsonbTransient
     @ManyToMany
-    private List<User> users = new ArrayList<>();
+    private Set<User> users = new HashSet<>();
 
     @JsonbTransient
     @ManyToMany
-    private List<User> admins = new ArrayList<>();
+    private Set<User> admins = new HashSet<>();
 
     @JsonbTransient
     @OneToMany(mappedBy = "group", cascade = CascadeType.ALL)
@@ -96,5 +98,51 @@ public class Group {
     public String getGroupName() {return groupname;}
     public String getGroupcreator() {return groupcreator;}
 
+    public void setGroupcreator(String groupcreator) {
+        this.groupcreator = groupcreator;
+    }
 
+    public List<User> getAdmins() {
+        return admins;
+    }
+
+    public List<Post> getPosts() {
+        return posts;
+    }
+
+    public void setPosts(List<Post> posts) {
+        this.posts = posts;
+    }
+
+    public List<String> getGroupJoinrequests() {
+        return groupJoinrequests;
+    }
+
+    public void setGroupJoinrequests(List<String> groupJoinrequests) {
+        this.groupJoinrequests = groupJoinrequests;
+    }
+
+    public List<User> getWaitingUsersList() {
+        return waitingUsersList;
+    }
+
+    public List<User> getUsers() {
+        return users;
+    }
+
+    public String getGroupType() {
+        return groupType;
+    }
+
+    public void setGroupType(String groupType) {
+        this.groupType = groupType;
+    }
+
+    public String getGroupname() {
+        return groupname;
+    }
+
+    public void setGroupname(String groupname) {
+        this.groupname = groupname;
+    }
 }

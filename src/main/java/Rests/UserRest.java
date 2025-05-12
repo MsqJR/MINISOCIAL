@@ -135,7 +135,8 @@ public class UserRest
         try {
             usb.SendFriendRequest(username, friend.getName());
             return Response.ok("{\"message\":\"Friend request sent.\"}").build();
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity("{\"error\":\"" + e.getMessage() + "\"}")
                     .build();
