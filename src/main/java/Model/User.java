@@ -31,6 +31,9 @@ public class User {
     @NotNull
     private String Password;
 
+    @JsonbTransient
+    @ManyToMany
+    private List<Group> groups = new ArrayList<>();
 
     private String Role;
 
