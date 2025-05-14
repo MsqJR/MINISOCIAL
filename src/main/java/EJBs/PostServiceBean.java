@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Stateless
 public class PostServiceBean implements PostService
@@ -25,7 +26,15 @@ public class PostServiceBean implements PostService
     @EJB(beanName = "NotificationServiceBean" )
     private NotificationService nss;
 
-    /****************************************************************************************/
+
+
+    @Override
+    public void deletePost(long postId) {
+        Post post = em.find(Post.class, postId);
+        if (post != null) {
+            em.remove(post);
+        }
+    }
     private User findUserByName(String name) {
         try {
             TypedQuery<User> query = em.createQuery(
@@ -36,7 +45,7 @@ public class PostServiceBean implements PostService
             return null;
         }
     }
-    private Post findPostById(long id) {
+    public Post findPostById(long id) {
         try {
             TypedQuery<Post> query = em.createQuery(
                     "SELECT p FROM Post p WHERE p.id = :id", Post.class);
@@ -47,7 +56,7 @@ public class PostServiceBean implements PostService
             return null;
         }
     }
-    /****************************************************************************************/
+
     @Override
     public void createPost(String username, String content, String imageUrl, String link) {
         User user = findUserByName(username);
@@ -75,7 +84,6 @@ public class PostServiceBean implements PostService
 
         em.persist(post);
     }
-    /*****************************************************************************************/
     @Override
     public List<Object> getUserFeed(String username) {
         User user = findUserByName(username);
@@ -84,8 +92,9 @@ public class PostServiceBean implements PostService
         }
 
         TypedQuery<Post> query = em.createQuery(
-                "SELECT p FROM Post p WHERE p.user = :user OR p.user IN (SELECT f FROM User u JOIN u.friends f WHERE u = :user) ORDER BY p.createdAt DESC",
-                Post.class);
+                "SELECT p FROM Post p WHERE p.user = :user OR p.user IN " +
+                        "(SELECT f FROM User u JOIN u.friends f WHERE u = :user) " +
+                        "ORDER BY p.createdAt DESC", Post.class);
         query.setParameter("user", user);
         List<Post> posts = query.getResultList();
 
@@ -102,18 +111,28 @@ public class PostServiceBean implements PostService
                     .setParameter("post", post)
                     .getResultList();
 
+            List<String> likeUsernames = likes.stream()
+                    .map(like -> like.getUser().getName())
+                    .collect(Collectors.toList());
+
+            List<String> commentUsernames = comments.stream()
+                    .map(comment -> comment.getText()+"/"+comment.getUser().getName() )
+                    .collect(Collectors.toList());
+
             Map<String, Object> postMap = new HashMap<>();
+            postMap.put("user name", post.getUser().getName());
             postMap.put("postId", post.getPostId());
             postMap.put("content", post.getContent());
-            postMap.put("user", post.getUser());
-            postMap.put("comments", comments.isEmpty() ? null : comments);
-            postMap.put("likes", likes.isEmpty() ? null : likes);
+            postMap.put("likes", likeUsernames.isEmpty() ? null : likeUsernames);
+            postMap.put("comments", commentUsernames.isEmpty() ? null : commentUsernames);
 
             result.add(postMap);
         }
+
         return result;
     }
-    /***********************************************************************************/
+
+
     @Override
     public void UpdatePost(long postID, Post newPost) {
         Post existingPost = em.find(Post.class, postID);
@@ -124,7 +143,7 @@ public class PostServiceBean implements PostService
         em.merge(existingPost);
         System.out.println("Successfully updated post");
     }
-    /**********************************************************************************/
+
     @Override
     public void DeletePost(long postID)
     {
@@ -166,7 +185,7 @@ public class PostServiceBean implements PostService
                 commentText
         );
     }
-    /*********************************************************************************************/
+
     @Override
     public void likePost(long postId, String username)
     {
@@ -192,5 +211,31 @@ public class PostServiceBean implements PostService
         System.out.println("Successfully liked post");
     }
 
+
+    @Override
+    public void createGroupPost(User user, Group group, String content, String imageUrl, String link) {
+        if (content == null || content.trim().isEmpty()) {
+            throw new RuntimeException("Post content cannot be empty");
+        }
+
+        Post post = new Post();
+        post.setUser(user);
+        post.setGroup(group);
+        post.setContent(content);
+
+        if (imageUrl != null && !imageUrl.trim().isEmpty()) {
+            ImageAttachement media = new ImageAttachement();
+            media.setImage_url(imageUrl);
+            em.persist(media);
+            post.setMedia(media);
+        } else if (link != null && !link.trim().isEmpty()) {
+            LinkAttachement media = new LinkAttachement();
+            media.setLink(link);
+            em.persist(media);
+            post.setMedia(media);
+        }
+
+        em.persist(post);
+}
 
 }

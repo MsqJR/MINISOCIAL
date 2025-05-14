@@ -3,9 +3,11 @@ package EJBs;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 
 import Messaging.NotificationService;
+import Model.Profile;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
@@ -27,22 +29,34 @@ public class UserServiceBean implements UserService {
     @EJB(beanName = "NotificationServiceBean" )
     private NotificationService nss;
 
+    private User currentUser;
+    private Profile currentProfile;
+
+
+    private List<String> loggedInUsers = new ArrayList<>();
+
+
     @Override
-    public void registerUser(String email, String password,String UserName) {
+    public void registerUser(String email, String password,String UserName,String Role) {
         if (findUserByEmail(email) != null) {
-            System.out.println("This email already exists");
-        } else {
+            throw new RuntimeException("This email already exists");
+        }
             User newUser = new User();
             newUser.setEmail(email);
             newUser.setPassword(password);
-            newUser.setRole("User");// Default role
+            if(Role.equals("admin")){
+                newUser.setRole("admin");
+            }
+           else
+           {
+              newUser.setRole("user");
+           }
 
-
-            newUser.setName(UserName);
+           newUser.setName(UserName);
 
             em.persist(newUser);
         }
-    }
+
 
     @Override
     public User findUserByEmail(String email) {
@@ -55,15 +69,23 @@ public class UserServiceBean implements UserService {
             return null;
         }
     }
-
     @Override
     public User login(String email, String password) {
+        if (loggedInUsers.contains(email)) {
+            throw new RuntimeException("User already logged in.");
+        }
         User user = findUserByEmail(email);
         if (user != null && user.getPassword().equals(password)) {
+            loggedInUsers.add(email);
             return user;
         } else {
             throw new RuntimeException("Invalid email or password.");
         }
+    }
+
+    @Override
+    public void logout(String email) {
+        loggedInUsers.remove(email);
     }
 
     @Override
@@ -88,26 +110,6 @@ public class UserServiceBean implements UserService {
         } catch (NoResultException e) {
             return null;
         }
-    }
-
-    @Override
-    public void UpdateProfile(long UID, User newUser) {
-        User existingUser = em.find(User.class, UID);
-        if (existingUser == null) {
-            throw new RuntimeException("User not found with ID: " + UID);
-        }
-
-        if (newUser.getName() != null) {
-            existingUser.setName(newUser.getName());
-        }
-        if (newUser.getPassword() != null) {
-            existingUser.setPassword(newUser.getPassword());
-        }
-        if (newUser.getEmail() != null) {
-            existingUser.setEmail(newUser.getEmail());
-        }
-
-        em.merge(existingUser);
     }
 
     @Override
@@ -241,18 +243,96 @@ public class UserServiceBean implements UserService {
     }
 
     @Override
-    public List<User> viewConnections(String userName) {
+    public List<String> viewConnections(String userName) {
         User currentUser = findUserByName(userName);
         if (currentUser == null) {
             throw new RuntimeException("User not found");
         }
+
         Set<User> friends = currentUser.getFriends();
         if (friends == null || friends.isEmpty()) {
             System.out.println("No friends found for user: " + userName);
             return new ArrayList<>();
         }
+
         System.out.println("Successfully retrieved " + friends.size() + " friends for user: " + userName);
-        return new ArrayList<>(friends);
+
+        // Return only the names of friends
+        return friends.stream()
+                .map(User::getName)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public void UpdateProfile(Profile newProfile, long PID)
+    {
+        Profile existingProfile = em.find(Profile.class, PID);
+
+        if (existingProfile == null) {
+            throw new RuntimeException("Profile with ID " + PID + " not found");
+        }
+
+        User user = existingProfile.getUser();
+        if (user == null || !loggedInUsers.contains(user.getEmail())) {
+            throw new RuntimeException("User not logged in or user not found");
+        }
+
+
+        existingProfile.setProfile_name(newProfile.getProfile_name());
+        existingProfile.setBio(newProfile.getBio());
+
+
+         existingProfile.setProfile_email(newProfile.getProfile_email());
+         existingProfile.setProfile_password(newProfile.getProfile_password());
+        existingProfile.setProfile_role(newProfile.getProfile_role());
+
+        em.merge(existingProfile);
+        em.flush();
+
+        System.out.println("Profile with ID " + PID + " updated successfully");
+    }
+
+
+
+    @Override
+    public void MakeProfile(Profile profile,Long ID )
+    {
+        currentUser = findUserById(ID);
+        if (currentUser == null)
+        {
+            throw new RuntimeException("user not found");
+        }
+        if (!loggedInUsers.contains(currentUser.getEmail()))
+        {
+            throw new RuntimeException("user not logged in");
+        }
+
+
+        else {
+            profile.setProfile_password(currentUser.getPassword());
+            profile.setProfile_email(currentUser.getEmail());
+            profile.setUser(currentUser);
+            profile.setProfile_role(currentUser.getRole());
+            profile.setBio(profile.getBio());
+            profile.setProfile_name(profile.getProfile_name());
+
+            currentUser.setUser_profile(profile);
+
+
+            em.persist(profile);
+            em.flush();
+            System.out.println("Successfully created profile");
+        }
+    }
+    @Override
+    public Profile viewProfile(long UID) {
+        try {
+            TypedQuery<Profile> q = em.createQuery("SELECT p FROM Profile p WHERE p.user.ID = :uid", Profile.class);
+            q.setParameter("uid", UID);
+            return q.getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        }
     }
 
 }

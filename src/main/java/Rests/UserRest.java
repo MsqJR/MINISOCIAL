@@ -52,6 +52,20 @@ public class UserRest
                     .build();
         }
     }
+    /*********************************************************************************/
+    @POST
+    @Path("/logout")
+    public Response user_Logout(User us)
+    {
+        try {
+            usb.logout(us.getEmail());
+            return Response.ok("{\"message\":\"User logged out successfully.\"}").build();
+        } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("{\"error\":\"" + e.getMessage() + "\"}")
+                    .build();
+        }
+    }
     /***********************************************************************************************************/
     @POST
     @Path("/register")
@@ -63,7 +77,7 @@ public class UserRest
                         .build();
             }
 
-            usb.registerUser(us.getEmail(), us.getPassword(),us.getName());
+            usb.registerUser(us.getEmail(), us.getPassword(),us.getName(),us.getRole());
             return Response.status(Response.Status.CREATED)
                     .entity("{\"message\":\"User registered successfully.\"}")
                     .build();
@@ -86,21 +100,6 @@ public class UserRest
                     .build();
         }
     }
-    /***********************************************************************************************************/
-    @POST
-    @Path("/update/{id}")
-    public Response updateUser(@PathParam("id") long id, User updatedUser)
-    {
-        try {
-            usb.UpdateProfile(id, updatedUser);
-            return Response.ok("{\"message\":\"User updated successfully\"}").build();
-        } catch (Exception e) {
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity("{\"error\":\"" + e.getMessage() + "\"}")
-                    .build();
-        }
-
-    }
     /************************************************************************************/
     @GET
     @Path("/{username}/friends")
@@ -108,7 +107,7 @@ public class UserRest
     {
         System.out.println("Fetching friends for user: " + username + " ... ");
         try {
-            List<User> friends = usb.viewConnections(username);
+            List<String> friends = usb.viewConnections(username);
             if (friends.isEmpty()) {
                 return Response.status(Response.Status.OK)
                         .entity("{\"message\": \"No friends found.\"}")
@@ -276,14 +275,46 @@ public class UserRest
                     .build();
         }
     }
-    @GET
-    @Path("/hello")
-    public String hello()
-    {
-        return "Hello World";
+ /************************************************************************************************************/
+ @GET
+ @Path("/getProfile/{UID}")
+ public Response viewProfile(@PathParam("UID") long UID) {
+     Profile profile = usb.viewProfile(UID);
+     if (profile == null) {
+         return Response.status(Response.Status.NOT_FOUND)
+                 .entity("Profile not found for user ID " + UID)
+                 .build();
+     }
+     return Response.ok(profile).build();
+ }
+ /********************************************************************************************************/
+ @POST
+ @Path("/make_profile/{UID}")
+ public Response MakeProfile(@PathParam("UID") long UID, Profile profile) {
+     try {
+         usb.MakeProfile(profile, UID);
+         return Response.status(Response.Status.CREATED).entity("Profile successfully created").build();
+     } catch (RuntimeException e) {
+         return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
+     } catch (Exception e) {
+         return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("An error occurred while creating the profile").build();
+     }
+ }
+/***********************************************************************************************************/
+@POST
+@Path("/update_profile/{uid}")
+public Response UpdateProfile(@PathParam("uid") long uid,Profile profile)
+{
+    try {
+        usb.UpdateProfile(profile, uid);
+        return Response.status(Response.Status.CREATED).entity("Profile updated created").build();
+    } catch (RuntimeException e) {
+        return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).build();
+    } catch (Exception e) {
+        return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("An error occurred while updating the profile").build();
     }
 
 
-/***********************************************************************************************************/
+}
 
 }

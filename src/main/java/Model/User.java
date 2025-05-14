@@ -60,8 +60,22 @@ public class User {
     private Set<User> friends = new HashSet<>();
     /*************************************************************************/
     @OneToOne
+    @JoinColumn(name = "profile_id")
     private Profile user_profile;
+
+    public Profile getUser_profile() {
+        return user_profile;
+    }
+
+    public void setUser_profile(Profile user_profile) {
+        this.user_profile = user_profile;
+    }
+
     /*************************************************************************/
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
+    @JsonbTransient
+    private List<Post> posts = new ArrayList<>();
+    /**********************************************************************/
 
     public long getId() {
         return ID;
@@ -118,9 +132,7 @@ public class User {
     public void setFriends(Set<User> friends) {
         this.friends = friends;
     }
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    @JsonbTransient
-    private List<Post> posts = new ArrayList<>();
+
     public List<Post> getPosts()
     {
         return posts;

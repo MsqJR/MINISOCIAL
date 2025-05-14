@@ -1,5 +1,6 @@
 package Rests;
 
+import Model.Group;
 import Model.Post;
 import Service.PostService;
 import jakarta.ejb.EJB;
@@ -18,18 +19,7 @@ public class PostRest
     @EJB(beanName = "PostServiceBean")
     private PostService psb;
 
-   /* @GET
-    @Path("/getposts/{username}")
-    public Response getPosts(@PathParam("username") String username) {
-        try {
-            return Response.ok(psb.GetAllPoststhatUserHasPosted(username)).build();
-        } catch (Exception e) {
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
-                    .entity("{\"error\":\"Failed to fetch posts: " + e.getMessage() + "\"}")
-                    .build();
-        }
-    }
-*/
+
     @POST
     @Path("/updateposts/{postID}")
     public Response updatePost(@PathParam("postID") long postID, Post updatedPost)
@@ -57,7 +47,6 @@ public class PostRest
                     .build();
         }
     }
-    /**********************************************************************************************/
 
     public static class Request {
         public String username;
@@ -76,7 +65,6 @@ public class PostRest
                     .build();
         }
     }
-    /*********************************************************************************************/
 
     @POST
     @Path("/addLike/{postId}")
@@ -93,5 +81,26 @@ public class PostRest
 
 
     }
+    public static class GroupPostRequest {
+        public String username;
+        public String groupname;
+        public String content;
+        public String imageUrl;
+        public String link;
+}
+
+/*@GET
+     @Path("/getposts/{username}")
+     public Response getPosts(@PathParam("username") String username) {
+         try {
+             return Response.ok(psb.GetAllPoststhatUserHasPosted(username)).build();
+         } catch (Exception e) {
+             return Response.status(Response.Status.INTERNAL_SERVER_ERROR)
+                     .entity("{\"error\":\"Failed to fetch posts: " + e.getMessage() + "\"}")
+                     .build();
+         }
+     }
+   */
+
 
 }

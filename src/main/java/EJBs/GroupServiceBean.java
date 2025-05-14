@@ -5,6 +5,7 @@ import Model.Post;
 import Model.User;
 import Service.GroupService;
 import Service.NotificationService;
+import Service.PostService;
 import Service.UserService;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
@@ -13,10 +14,13 @@ import jakarta.persistence.NoResultException;
 import jakarta.persistence.PersistenceContext;
 import jakarta.persistence.TypedQuery;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Stateless
-public class GroupServiceBean implements GroupService {
+public class GroupServiceBean implements GroupService
+{
 
     @PersistenceContext
     private EntityManager em;
@@ -48,13 +52,25 @@ public class GroupServiceBean implements GroupService {
             throw new RuntimeException("User or Group not found.");
         }
 
-        if (groupType.equalsIgnoreCase("public")) {
-            group.addToUsersList(user);
-            notificationService.sendJoinNotification(username, groupname);
+        if (group.getUsers().contains(user) || group.getAdmins().contains(user)) {
+            throw new RuntimeException("User is already a member of this group.");
+        }
+        if (groupType.equals("private") && group.getWaitingUsersList().contains(user)) {
+            throw new RuntimeException("Join request already sent for this private group.");
+        }
+
+        if (groupType.equals("public"))
+        {
+            group.setUsers(group.addToUsersList(user));
             em.merge(group);
-        } else if (groupType.equalsIgnoreCase("private")) {
+            System.out.println("Successfully joined public group");
+            notificationService.sendJoinNotification(username, groupname);
+        } else if (groupType.equals("private")) {
             group.setWaitingUsersList(group.addToWaitingUsersList(user));
             em.merge(group);
+            System.out.println("Request sent to join private group: " + groupname);
+        } else {
+            throw new RuntimeException("Invalid group type. Must be 'public' or 'private'.");
         }
     }
 
@@ -93,7 +109,7 @@ public class GroupServiceBean implements GroupService {
         }
 
         if (!usercreator.equals(group.getGroupcreator())) {
-            System.out.println("You are not the group creator");
+            throw new RuntimeException("You are not the group creator");
         } else {
             group.setAdmins(group.addToAdminsList(user));
             group.setUsers(group.removeFromUsersList(user));
@@ -111,7 +127,7 @@ public class GroupServiceBean implements GroupService {
         }
 
         if (!usercreator.equals(group.getGroupcreator())) {
-            System.out.println("You are not the group creator");
+            throw new RuntimeException("You are not the group creator");
         } else {
             em.remove(em.contains(group) ? group : em.merge(group));
             System.out.println("Group removed");
@@ -130,8 +146,119 @@ public class GroupServiceBean implements GroupService {
         }
     }
 
+    @EJB
+    private PostService postService;
+
     @Override
     public void addpost(String username, String groupName, String content, String imageUrl, String link) {
-        // Implementation pending: integrate with PostServiceBean when ready
+        Group group = findGroupByName(groupName);
+        User user = userService.findUserByName(username);
+
+        if (group == null || user == null) {
+            throw new RuntimeException("Group or User not found.");
+        }
+
+        if (!group.getUsers().contains(user) && !group.getAdmins().contains(user)) {
+            throw new RuntimeException("User is not a member of this group.");
+        }
+
+        postService.createGroupPost(user, group, content, imageUrl, link);
+    }
+
+    @Override
+    public void removePostFromGroup(String adminUsername, String groupName, long postId) {
+        Group group = findGroupByName(groupName);
+        User admin = userService.findUserByName(adminUsername);
+
+        if (group == null || admin == null) {
+            throw new RuntimeException("Group or Admin not found.");
+        }
+
+        if (!group.getAdmins().contains(admin)) {
+            throw new RuntimeException("User is not an admin of this group.");
+        }
+
+        Post post = postService.findPostById(postId);
+        if (post == null || !post.getGroup().equals(group)) {
+            throw new RuntimeException("Post not found in this group.");
+        }
+
+        postService.deletePost(postId);
+    }
+
+    @Override
+    public void removeUserFromGroup(String adminUsername, String targetUsername, String groupName) {
+        Group group = findGroupByName(groupName);
+        User admin = userService.findUserByName(adminUsername);
+        User targetUser = userService.findUserByName(targetUsername);
+
+        if (group == null || admin == null || targetUser == null) {
+            throw new RuntimeException("Group, Admin, or User not found.");
+        }
+
+        if (!group.getAdmins().contains(admin)) {
+            throw new RuntimeException("User is not an admin of this group.");
+        }
+
+        if (!group.getUsers().contains(targetUser) && !group.getAdmins().contains(targetUser)) {
+            throw new RuntimeException("Target user is not a member of this group.");
+        }
+
+        if (group.getAdmins().contains(targetUser)) {
+            group.getAdmins().remove(targetUser);
+        } else {
+            group.getUsers().remove(targetUser);
+        }
+
+        em.merge(group);
+    }
+
+    @Override
+    public void acceptJoinRequest(String username, long userid, String groupname) {
+        User user = em.find(User.class, userid);
+        Group group = findGroupByName(groupname);
+
+        if (user == null || group == null) {
+            throw new RuntimeException("User or Group not found.");
+        }
+
+        if (!group.getGroupType().equals("private")) {
+            throw new RuntimeException("This is not a private group.");
+        }
+
+        if (group.getWaitingUsersList().contains(user)) {
+            group.setUsers(group.addToUsersList(user));
+            group.setWaitingUsersList(group.removeFromWaitingList(user));
+            em.merge(group);
+            System.out.println("User " + username + "'s join request for private group " + groupname + " accepted.");
+            notificationService.sendJoinNotification(username, groupname);
+        } else {
+            throw new RuntimeException("User is not in the waiting list for this private group.");
+        }
+    }
+
+    @Override
+    public List<User> getUsersInGroup(String groupName) {
+        Group group = findGroupByName(groupName);
+        if (group == null) {
+            throw new RuntimeException("Group not found.");
+        }
+
+        List<User> allUsers = new ArrayList<>();
+        allUsers.addAll(group.getUsers());
+        allUsers.addAll(group.getAdmins());
+
+        return allUsers;
+    }
+    @Override
+    public List<String> getWaitingUsernamesForGroup(String groupName) {
+        Group group = findGroupByName(groupName);
+        if (group == null) {
+            throw new RuntimeException("Group not found.");
+        }
+
+        return group.getWaitingUsersList().stream()
+                .map(User::getName)
+                .collect(Collectors.toList());
     }
 }

@@ -39,6 +39,17 @@ public class Post {
     @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Like> likes = new ArrayList<>();
 
+    @ManyToOne
+    @JoinColumn(name = "group_id")
+    private Group group;
+
+    public Group getGroup() {
+        return group;
+    }
+
+    public void setGroup(Group group) {
+        this.group = group;
+    }
 
     public Post() {
         this.createdAt = LocalDateTime.now();
@@ -95,6 +106,6 @@ public class Post {
     }
 
     public void setLikes(List<Like> likes) {
-        this.likes = likes;
-    }
+        this.likes =likes;
+}
 }

@@ -9,6 +9,7 @@ import jakarta.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
+
 @Entity
 @Table(name = "groups")
 public class Group {
@@ -85,8 +86,9 @@ public class Group {
     public void setAdmins(List<User> admins) {
         this.admins = admins;
     }
-    public void setUsers(List<User> users) {
-        this.users = users;
+    public void setUsers(List<User> users)
+    {
+        this.users= users;
     }
 
     public String getGroupcreator() {return groupcreator;}
@@ -94,6 +96,7 @@ public class Group {
         admins.add(user);
         return admins;
     }
+
 
     public List<User> addToUsersList(User user) {
         users.add(user);
@@ -136,4 +139,35 @@ public class Group {
 
 
 
+    public List<User> getUsers() {
+        return users;
+    }
+
+    public List<User> getAdmins() {
+        return admins;
+}
+
+    public String getGroupname() {
+        return groupname;
+    }
+
+    public List<String> getGroupJoinrequests() {
+        return groupJoinrequests;
+    }
+
+    public void setGroupJoinrequests(List<String> groupJoinrequests) {
+        this.groupJoinrequests = groupJoinrequests;
+    }
+
+    public void setGroupType(String groupType) {
+        this.groupType = groupType;
+    }
+
+    public List<User> getWaitingUsersList() {
+        return waitingUsersList;
+    }
+
+    public void setGroupcreator(String groupcreator) {
+        this.groupcreator = groupcreator;
+    }
 }
