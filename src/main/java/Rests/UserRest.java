@@ -3,8 +3,10 @@ package Rests;
 
 import Model.*;
 import Service.UserService;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.ejb.EJB;
 import jakarta.ws.rs.*;
+import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 
@@ -16,9 +18,11 @@ import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.POST;
 
+import java.security.Principal;
 import java.util.List;
 import Model.ImageAttachement;
 import Model.LinkAttachement;
+import jakarta.ws.rs.core.SecurityContext;
 
 
 @Path("/Users")
@@ -28,6 +32,9 @@ public class UserRest
 {
     @EJB
     private UserService usb;
+
+    @Context
+    private SecurityContext sc;
 
     @POST
     @Path("/login")
@@ -303,8 +310,7 @@ public class UserRest
 /***********************************************************************************************************/
 @POST
 @Path("/update_profile/{uid}")
-public Response UpdateProfile(@PathParam("uid") long uid,Profile profile)
-{
+public Response UpdateProfile(@PathParam("uid") long uid,Profile profile) {
     try {
         usb.UpdateProfile(profile, uid);
         return Response.status(Response.Status.CREATED).entity("Profile updated created").build();
@@ -313,8 +319,39 @@ public Response UpdateProfile(@PathParam("uid") long uid,Profile profile)
     } catch (Exception e) {
         return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("An error occurred while updating the profile").build();
     }
+}
+/**************************************************************************************************************/
+@DELETE
+@RolesAllowed("admin")
+@Path("/{id}")
+public Response deleteUser(@PathParam("id") long id, @HeaderParam("User-Email") String email) {
+    if (email == null || email.isEmpty()) {
+        return Response.status(Response.Status.UNAUTHORIZED)
+                .entity("{\"error\":\"User email header missing\"}").build();
+    }
+
+    User currentUser = usb.findUserByEmail(email);
+    if (currentUser == null || !"admin".equalsIgnoreCase(currentUser.getRole())) {
+        return Response.status(Response.Status.FORBIDDEN)
+                .entity("{\"error\":\"Access denied\"}").build();
+    }
+
+    try {
+        boolean result = usb.deleteUser(id, currentUser);
+        if (result) {
+            return Response.ok("{\"message\":\"User deleted\"}").build();
+        } else {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity("{\"error\":\"User not found\"}").build();
+        }
+    } catch (SecurityException se) {
+        return Response.status(Response.Status.FORBIDDEN)
+                .entity("{\"error\":\"" + se.getMessage() + "\"}").build();
+    }
+}
+
 
 
 }
 
-}
+

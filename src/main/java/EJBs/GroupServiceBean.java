@@ -7,6 +7,7 @@ import Model.User;
 import Service.GroupService;
 import Service.PostService;
 import Service.UserService;
+import Service.groupNotifications;
 import jakarta.ejb.EJB;
 import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
@@ -26,7 +27,8 @@ public class GroupServiceBean implements GroupService
     private EntityManager em;
 
     @EJB
-    private NotificationService notificationService;
+    private NotificationService nss;
+
 
     @EJB(name = "UserServiceBean")
     private UserService userService;
@@ -62,11 +64,13 @@ public class GroupServiceBean implements GroupService
         if (groupType.equals("public"))
         {
             group.setUsers(group.addToUsersList(user));
+            nss.sendGroupJoinLeaveNotification(username,groupname,true);
             em.merge(group);
             System.out.println("Successfully joined public group");
-           // notificationService.sendJoinNotification(username, groupname);
+            // grp.sendJoinNotification(username, groupname);
         } else if (groupType.equals("private")) {
             group.setWaitingUsersList(group.addToWaitingUsersList(user));
+            nss.sendGroupJoinLeaveNotification(username,groupname,true);
             em.merge(group);
             System.out.println("Request sent to join private group: " + groupname);
         } else {
@@ -86,7 +90,7 @@ public class GroupServiceBean implements GroupService
 
         if(group.getUsers().contains(user)){group.setUsers(group.removeFromUsersList(user));}
         if(group.getAdmins().contains(user)){group.setAdmins(group.removeFromAdminList(user));}
-      //  notificationService.sendLeaveNotification(user.getName(), groupname);
+        nss.sendGroupJoinLeaveNotification(user.getName(),groupname,false);
         em.merge(group);
     }
 
@@ -233,7 +237,7 @@ public class GroupServiceBean implements GroupService
             group.setWaitingUsersList(group.removeFromWaitingList(user));
             em.merge(group);
             System.out.println("User " + username + "'s join request for private group " + groupname + " accepted.");
-         //notificationService.sendJoinNotification(username, groupname);
+            //grp.sendJoinNotification(username, groupname);
         } else {
             throw new RuntimeException("User is not in the waiting list for this private group.");
         }
@@ -266,9 +270,10 @@ public class GroupServiceBean implements GroupService
     public List<Post>  getGroupPosts(int groupid){
         Group group = em.find(Group.class, groupid);
         TypedQuery<Post> query = em.createQuery(
-        "SELECT p FROM Post p WHERE p.group = :group ", Post.class);
+                "SELECT p FROM Post p WHERE p.group = :group ", Post.class);
         query.setParameter("group", group);
         List<Post> posts = query.getResultList();
         return posts;
-    }
+}
+
 }

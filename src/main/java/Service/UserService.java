@@ -22,6 +22,7 @@ public interface UserService
     List<String> viewConnections(String userName);
     void logout(String email) ;
     void UpdateProfile(Profile newProfile,long PID);
-    public void MakeProfile(Profile profile, Long ID);
+    void MakeProfile(Profile profile, Long ID);
     Profile viewProfile(long ID);
+    public boolean deleteUser(long targetUserId, User currentUser);
 }

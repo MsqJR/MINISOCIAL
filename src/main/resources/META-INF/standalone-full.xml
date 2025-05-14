@@ -21,4 +21,8 @@
                entries="java:/jms/topic/NotificationTopic
                java:jboss/exported/jms/topic/NotificationTopic"/>
 
+    <jms-topic name="GroupNotificationTopic"
+               entries="java:/jms/GroupNotificationTopic
+               java:jboss/exported/jms/GroupNotificationTopic"/>
+
 </datasources>

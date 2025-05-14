@@ -336,4 +336,20 @@ public class UserServiceBean implements UserService {
         }
     }
 
+    @Override
+    public boolean deleteUser(long targetUserId, User currentUser) {
+        User targetUser = em.find(User.class, targetUserId);
+
+        if (targetUser == null) return false;
+
+        if (!"admin".equals(currentUser.getRole())) {
+            throw new SecurityException("Only Admins can delete users.");
+        }
+
+        if ("admin".equals(targetUser.getRole())) {
+            throw new SecurityException("Cannot delete another Admin.");
+        }
+        em.remove(targetUser);
+        return true;
+    }
 }
