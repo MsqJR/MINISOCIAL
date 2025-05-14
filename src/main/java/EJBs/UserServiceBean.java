@@ -191,11 +191,12 @@ public class UserServiceBean implements UserService {
         {
 
             System.out.println("Friend request received from " + friend.getName() + " by " + user.getName());
-            nss.sendFriendRequestNotification(user.getName(),friend.getName());
+           // nss.sendFriendRequestNotification(user.getName(),friend.getName());
         }
    else
         {
             System.out.println("No friend request found from " + friendname);
+            nss.sendFriendRequestNotification(user.getName(),friend.getName());
         }
     }
 

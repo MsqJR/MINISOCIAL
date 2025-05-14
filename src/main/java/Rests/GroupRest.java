@@ -1,6 +1,7 @@
 package Rests;
 
 import Model.Group;
+import Model.Post;
 import Model.User;
 import Service.GroupService;
 import Service.PostService;
@@ -145,17 +146,13 @@ public class GroupRest {
     @Path("/leaveGroup")
     public Response leaveGroup(GroupLeaveRequest request) {
         try {
-            if (request.getUsername() == null || request.getUsername().isEmpty()) {
-                return Response.status(Response.Status.BAD_REQUEST)
-                        .entity("{\"error\":\"Username is required\"}")
-                        .build();
-            }
+
             if (request.getGroupname() == null || request.getGroupname().isEmpty()) {
                 return Response.status(Response.Status.BAD_REQUEST)
                         .entity("{\"error\":\"Group name is required\"}")
                         .build();
             }
-            gsb.leaveGroup(request.getUsername(), (int) request.getUserid(), request.getGroupname());
+            gsb.leaveGroup((int) request.getUserid(), request.getGroupname());
             return Response.ok("{\"message\":\"User left group successfully\"}").build();
         } catch (Exception e) {
             return Response.status(Response.Status.BAD_REQUEST)
@@ -274,6 +271,8 @@ public class GroupRest {
     @POST
     @Path("/acceptJoinRequest")
     public Response acceptJoinRequest(GroupJoinRequest request) {
+        System.out.println(request.username+"********************************************");
+        System.out.println(request.groupname+"***********************************");
         try {
             if (request.getUsername() == null || request.getUsername().isEmpty()) {
                 return Response.status(Response.Status.BAD_REQUEST)
@@ -327,6 +326,25 @@ public class GroupRest {
 
             return Response.ok(response).build();
         } catch (Exception e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity("{\"error\":\"" + e.getMessage() + "\"}")
+                    .build();
+        }
+    }
+
+    @GET
+    @Path("/group_posts/{groupid}")
+    public Response getPostsinGroup(@PathParam("groupid") int groupID) {
+        try {
+            if (groupID <= 0) {
+                return Response.status(Response.Status.BAD_REQUEST)
+                        .entity("{\"error\":\"Invalid group ID\"}")
+                        .build();
+            }
+
+            List<Post> response = gsb.getGroupPosts(groupID);
+            return Response.ok(response).build();
+        } catch (RuntimeException e) {
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity("{\"error\":\"" + e.getMessage() + "\"}")
                     .build();
@@ -410,4 +428,5 @@ public class GroupRest {
             this.groupname = groupname;
         }
     }
+    
 }

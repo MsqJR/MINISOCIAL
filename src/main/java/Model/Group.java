@@ -111,9 +111,9 @@ public class Group {
         return waitingUsersList;
     }
     public List<User> removeFromAdminList(User user) {
-        User user1 = admins.get(0);
 
-        if (user.getId()== user1.getId())
+
+        if (getAdmins().contains(user))
         {
             admins.remove(user);
             return admins;
